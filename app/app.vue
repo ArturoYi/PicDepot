@@ -1,0 +1,37 @@
+<script setup lang="ts">
+useHead({
+  meta: [
+    { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+  ],
+  link: [
+    { rel: 'icon', href: '/favicon.ico' }
+  ],
+  htmlAttrs: {
+    lang: 'zh-CN'
+  }
+})
+
+const config = useRuntimeConfig()
+const description = 'Cloudflare Workers + R2 + D1 轻量图床（Nuxt + Nuxt UI）'
+
+useSeoMeta({
+  title: config.public.siteName,
+  description,
+  ogTitle: config.public.siteName,
+  ogDescription: description
+})
+
+const { refresh } = useAuthSession()
+
+onMounted(() => {
+  refresh()
+})
+</script>
+
+<template>
+  <UApp>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </UApp>
+</template>

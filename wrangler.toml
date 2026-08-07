@@ -1,0 +1,28 @@
+# Cloudflare Workers 绑定配置（供本地 nitro-cloudflare-dev / 构建合并使用）
+# 1. 在 Dashboard 创建 D1 / R2 后，取消注释并填入 database_id / bucket_name
+# 2. 配置 R2 公网直链后设置 R2_PUBLIC_BASE_URL
+# 3. npm run build && npm run deploy
+# 注意：nuxt build 会生成 .output 内的 wrangler 配置，main/assets 以生成结果为准
+
+name = "picdepot"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# R2 公网访问根地址（r2.dev 或自定义域名，勿尾斜杠）
+R2_PUBLIC_BASE_URL = "https://pub-76500580e79f4ca683b12ae9254508a1.r2.dev"
+# 单文件上限 20MB
+MAX_UPLOAD_BYTES = "20971520"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cf-imgbed-lite"
+database_id = "7aee20a4-7ec8-444e-85a3-fec31bca1591"
+migrations_dir = "migrations"
+remote = true
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "imgbed"
+# 本地 npm run dev 默认写本地模拟 R2，与 pub-*.r2.dev 直链不一致会 404；开发时也写云端桶
+remote = true
