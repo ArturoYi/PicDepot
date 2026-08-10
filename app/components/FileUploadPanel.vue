@@ -21,7 +21,7 @@ const { directory } = useUploadPreferences()
 
 const uploading = ref(false)
 const uploadProgress = ref(0)
-const queueLabel = ref('')
+const progressLabel = ref('')
 const directoryItems = ref<string[]>([])
 const folderInputRef = ref<HTMLInputElement | null>(null)
 const lastResult = ref<{
@@ -43,7 +43,9 @@ async function loadDirectories() {
 }
 
 onMounted(() => {
-  loadDirectories()
+  if (!props.compact) {
+    loadDirectories()
+  }
 })
 
 async function uploadOne(file: File) {
@@ -52,7 +54,7 @@ async function uploadOne(file: File) {
   }
 
   uploadProgress.value = 0
-  queueLabel.value = file.name
+  progressLabel.value = file.name
 
   const targetDir = resolveUploadDirectory(file, directory.value)
   const result = await uploadFileWithProgress(file, {
@@ -79,7 +81,7 @@ async function uploadFiles(raw: File[]) {
     for (let i = 0; i < list.length; i++) {
       const file = list[i]!
       if (list.length > 1) {
-        queueLabel.value = `${file.name}（${i + 1}/${list.length}）`
+        progressLabel.value = `${file.name}（${i + 1}/${list.length}）`
       }
       try {
         await uploadOne(file)
@@ -100,12 +102,14 @@ async function uploadFiles(raw: File[]) {
         color: 'success'
       })
       emit('uploaded')
-      await loadDirectories()
+      if (!props.compact) {
+        await loadDirectories()
+      }
     }
   } finally {
     uploading.value = false
     uploadProgress.value = 0
-    queueLabel.value = ''
+    progressLabel.value = ''
   }
 }
 
@@ -128,6 +132,7 @@ defineExpose({ loadDirectories, uploadFiles })
 <template>
   <div class="space-y-4">
     <UFormField
+      v-if="!compact"
       label="目录（可选）"
       hint="留空则图片入 image、视频入 video；填写后所有文件使用该目录"
     >
@@ -143,13 +148,16 @@ defineExpose({ loadDirectories, uploadFiles })
     <UFileUpload
       multiple
       accept="image/*,video/*,audio/*,.pdf,.zip"
-      :label="compact ? '拖拽或点击上传文件' : '拖拽、点击或粘贴上传'"
-      description="支持多文件；文件夹上传请使用下方按钮"
+      :label="compact ? '拖拽或点击上传' : '拖拽、点击或粘贴上传'"
+      :description="compact ? undefined : '支持多文件；文件夹上传请使用下方按钮'"
       :disabled="uploading"
       @update:model-value="onSelect"
     />
 
-    <div class="flex flex-wrap gap-2">
+    <div
+      v-if="!compact"
+      class="flex flex-wrap gap-2"
+    >
       <UButton
         icon="i-lucide-folder-up"
         label="选择文件夹上传"
@@ -172,8 +180,8 @@ defineExpose({ loadDirectories, uploadFiles })
       v-if="uploading"
       class="space-y-2"
     >
-      <p class="text-sm text-muted">
-        {{ queueLabel || '上传中…' }}
+      <p class="text-sm text-muted truncate">
+        {{ progressLabel || '上传中…' }}
       </p>
       <UProgress
         :model-value="uploadProgress"
@@ -181,29 +189,23 @@ defineExpose({ loadDirectories, uploadFiles })
       />
     </div>
 
-    <UCard v-if="showResult && lastResult">
-      <template #header>
-        <div class="flex items-center justify-between gap-2">
-          <span class="font-medium">上传结果</span>
-          <CopyLinkMenu
-            :url="lastResult.url"
-            :file-name="lastResult.fileName"
-            size="sm"
-          />
-        </div>
-      </template>
-      <div class="space-y-2 text-sm">
-        <p><span class="text-muted">文件：</span>{{ lastResult.fileName }}</p>
-        <p><span class="text-muted">大小：</span>{{ (lastResult.size / 1024).toFixed(1) }} KB</p>
-        <p class="break-all">
-          <span class="text-muted">URL：</span>
-          <a
-            :href="lastResult.url"
-            target="_blank"
-            class="text-primary underline"
-          >{{ lastResult.url }}</a>
-        </p>
+    <div
+      v-if="showResult && lastResult"
+      class="rounded-lg ring-1 ring-default bg-elevated/60 p-3 space-y-2"
+    >
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-sm font-medium truncate">{{ lastResult.fileName }}</span>
+        <CopyLinkMenu
+          :url="lastResult.url"
+          :file-name="lastResult.fileName"
+          size="sm"
+        />
       </div>
-    </UCard>
+      <a
+        :href="lastResult.url"
+        target="_blank"
+        class="block text-xs text-primary break-all underline"
+      >{{ lastResult.url }}</a>
+    </div>
   </div>
 </template>

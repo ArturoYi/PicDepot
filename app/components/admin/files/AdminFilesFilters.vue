@@ -12,30 +12,33 @@ defineEmits<{ apply: [] }>()
 </script>
 
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
+  <div class="flex flex-wrap items-center gap-2">
     <UInput
       v-model="filterQ"
       placeholder="搜索文件名"
       icon="i-lucide-search"
-      class="w-full"
+      size="sm"
+      class="w-full sm:w-44 min-w-0 flex-1 sm:flex-none"
       @keyup.enter="$emit('apply')"
     />
     <UInputMenu
       v-model="filterDir"
       :items="directoryItems"
-      placeholder="目录筛选"
+      placeholder="目录"
       icon="i-lucide-folder"
-      class="w-full"
+      size="sm"
+      class="w-[calc(50%-0.25rem)] sm:w-36"
     />
     <UInput
       v-model="filterType"
-      placeholder="MIME 前缀，如 image/"
-      class="w-full"
+      placeholder="image/"
+      size="sm"
+      class="w-[calc(50%-0.25rem)] sm:w-28"
       @keyup.enter="$emit('apply')"
     />
     <UButton
       label="筛选"
-      class="w-full sm:w-auto justify-center"
+      size="sm"
       :loading="listLoading"
       @click="$emit('apply')"
     />

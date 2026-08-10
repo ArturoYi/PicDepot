@@ -21,11 +21,6 @@ useSeoMeta({
   ogDescription: description
 })
 
-const { refresh } = useAuthSession()
-
-onMounted(() => {
-  refresh()
-})
 </script>
 
 <template>

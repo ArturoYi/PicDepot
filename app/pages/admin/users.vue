@@ -62,81 +62,84 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="max-w-2xl space-y-6">
-    <div>
-      <h1 class="text-2xl font-semibold text-highlighted">
-        用户管理
-      </h1>
-      <p class="text-sm text-muted mt-1">
-        对应主项目「用户管理」：账号由管理员手动创建，登录后可上传与管理（管理员）。
-      </p>
-    </div>
-
-    <UCard v-if="!loading">
-      <div class="space-y-3">
-        <h2 class="font-medium">
+  <div class="flex h-full min-h-0 flex-col gap-3 lg:flex-row lg:gap-4">
+    <div class="min-h-0 flex-1 overflow-hidden rounded-lg ring-1 ring-default flex flex-col">
+      <div class="shrink-0 px-3 py-2 border-b border-default">
+        <h2 class="text-sm font-medium">
           已有用户
         </h2>
+      </div>
+      <div
+        v-if="loading"
+        class="flex-1 p-3"
+      >
+        <USkeleton class="h-full min-h-32" />
+      </div>
+      <UScrollArea
+        v-else
+        class="min-h-0 flex-1"
+        :ui="{ viewport: 'p-2' }"
+      >
         <ul class="divide-y divide-default text-sm">
           <li
             v-for="u in users"
             :key="u.id"
-            class="py-2 flex items-center justify-between gap-2"
+            class="py-2.5 px-1 flex items-center justify-between gap-2"
           >
-            <div>
-              <span class="font-medium">{{ u.username }}</span>
+            <div class="min-w-0">
+              <span class="font-medium truncate">{{ u.username }}</span>
               <UBadge
                 v-if="u.isAdmin"
                 class="ml-2"
                 color="primary"
                 variant="subtle"
+                size="sm"
                 label="管理员"
               />
             </div>
-            <span class="text-muted text-xs">{{ formatTime(u.createdAt) }}</span>
+            <span class="text-muted text-xs shrink-0">{{ formatTime(u.createdAt) }}</span>
           </li>
         </ul>
-      </div>
-    </UCard>
-    <USkeleton
-      v-else
-      class="h-40"
-    />
+      </UScrollArea>
+    </div>
 
-    <UCard v-if="!loading">
-      <form
-        class="space-y-4"
-        @submit.prevent="addUser"
+    <form
+      class="shrink-0 w-full lg:w-72 space-y-3 rounded-lg ring-1 ring-default p-3 sm:p-4"
+      @submit.prevent="addUser"
+    >
+      <h2 class="text-sm font-medium">
+        添加用户
+      </h2>
+      <UFormField
+        label="用户名"
+        required
       >
-        <h2 class="font-medium">
-          添加用户
-        </h2>
-        <UFormField
-          label="用户名"
-          required
-        >
-          <UInput
-            v-model="newUsername"
-            autocomplete="off"
-          />
-        </UFormField>
-        <UFormField
-          label="初始密码"
-          required
-        >
-          <UInput
-            v-model="newPassword"
-            type="password"
-            autocomplete="new-password"
-          />
-        </UFormField>
-        <UButton
-          type="submit"
-          :loading="saving"
-          label="创建用户"
-          block
+        <UInput
+          v-model="newUsername"
+          size="sm"
+          autocomplete="off"
+          class="w-full"
         />
-      </form>
-    </UCard>
+      </UFormField>
+      <UFormField
+        label="初始密码"
+        required
+      >
+        <UInput
+          v-model="newPassword"
+          type="password"
+          size="sm"
+          autocomplete="new-password"
+          class="w-full"
+        />
+      </UFormField>
+      <UButton
+        type="submit"
+        :loading="saving"
+        label="创建用户"
+        block
+        size="sm"
+      />
+    </form>
   </div>
 </template>

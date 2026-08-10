@@ -1,5 +1,8 @@
 <script setup lang="ts">
+definePageMeta({ middleware: 'guest' })
+
 const toast = useToast()
+const route = useRoute()
 const { refresh, needsBootstrap } = useAuthSession()
 const username = ref('')
 const password = ref('')
@@ -18,6 +21,14 @@ onMounted(async () => {
     bootstrapAvailable.value = false
   }
 })
+
+function resolvePostLoginPath(isAdmin: boolean) {
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : ''
+  if (redirect.startsWith('/') && !redirect.startsWith('//')) {
+    return redirect
+  }
+  return isAdmin ? '/admin/files' : '/'
+}
 
 async function submit() {
   loading.value = true
@@ -46,7 +57,7 @@ async function submit() {
     })
     await refresh()
     toast.add({ title: '登录成功', color: 'success' })
-    await navigateTo(res.user.isAdmin ? '/admin/files' : '/')
+    await navigateTo(resolvePostLoginPath(res.user.isAdmin))
   } catch (error: unknown) {
     const err = error as { data?: { statusMessage?: string }, statusMessage?: string, message?: string }
     toast.add({
@@ -61,65 +72,67 @@ async function submit() {
 </script>
 
 <template>
-  <div class="max-w-md mx-auto">
-    <UCard>
-      <template #header>
-        <div class="space-y-1">
-          <h1 class="text-xl font-semibold">
-            {{ mode === 'login' ? '登录' : '首次初始化顶级管理员' }}
-          </h1>
-          <p class="text-sm text-muted">
-            {{ mode === 'login' ? '登录后可上传；管理员可管理文件与用户' : '仅首次可用，将创建 isAdmin 顶级管理员' }}
-          </p>
-        </div>
-      </template>
+  <div class="flex h-full min-h-0 items-center justify-center py-6">
+    <div class="w-full max-w-md">
+      <UCard>
+        <template #header>
+          <div class="space-y-1">
+            <h1 class="text-xl font-semibold">
+              {{ mode === 'login' ? '登录' : '首次初始化顶级管理员' }}
+            </h1>
+            <p class="text-sm text-muted">
+              {{ mode === 'login' ? '登录后可上传；管理员可进入后台管理' : '仅首次可用，将创建 isAdmin 顶级管理员' }}
+            </p>
+          </div>
+        </template>
 
-      <form
-        class="space-y-4"
-        @submit.prevent="submit"
-      >
-        <UFormField
-          label="用户名"
-          required
+        <form
+          class="space-y-4"
+          @submit.prevent="submit"
         >
-          <UInput
-            v-model="username"
-            autocomplete="username"
-            icon="i-lucide-user"
+          <UFormField
+            label="用户名"
+            required
+          >
+            <UInput
+              v-model="username"
+              autocomplete="username"
+              icon="i-lucide-user"
+            />
+          </UFormField>
+          <UFormField
+            label="密码"
+            required
+          >
+            <UInput
+              v-model="password"
+              type="password"
+              autocomplete="current-password"
+              icon="i-lucide-lock"
+            />
+          </UFormField>
+
+          <UButton
+            type="submit"
+            block
+            :loading="loading"
+            :label="mode === 'login' ? '登录' : '创建顶级管理员'"
           />
-        </UFormField>
-        <UFormField
-          label="密码"
-          required
+        </form>
+
+        <template
+          v-if="bootstrapAvailable"
+          #footer
         >
-          <UInput
-            v-model="password"
-            type="password"
-            autocomplete="current-password"
-            icon="i-lucide-lock"
+          <UButton
+            variant="link"
+            color="neutral"
+            size="sm"
+            :label="mode === 'login' ? '首次使用？初始化顶级管理员' : '已有账号？去登录'"
+            @click="mode = mode === 'login' ? 'bootstrap' : 'login'"
           />
-        </UFormField>
-
-        <UButton
-          type="submit"
-          block
-          :loading="loading"
-          :label="mode === 'login' ? '登录' : '创建顶级管理员'"
-        />
-      </form>
-
-      <template
-        v-if="bootstrapAvailable"
-        #footer
-      >
-        <UButton
-          variant="link"
-          color="neutral"
-          size="sm"
-          :label="mode === 'login' ? '首次使用？初始化顶级管理员' : '已有账号？去登录'"
-          @click="mode = mode === 'login' ? 'bootstrap' : 'login'"
-        />
-      </template>
-    </UCard>
+        </template>
+      </UCard>
+    </div>
   </div>
 </template>

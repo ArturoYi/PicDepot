@@ -1,9 +1,10 @@
-export default defineNuxtRouteMiddleware(async () => {
-  const { user, loaded, refresh } = useAuthSession()
-  if (!loaded.value) {
-    await refresh()
-  }
+export default defineNuxtRouteMiddleware(async (to) => {
+  const { user, ensureSession } = useAuthSession()
+  await ensureSession()
   if (!user.value) {
-    return navigateTo('/login')
+    return navigateTo({
+      path: '/login',
+      query: { redirect: to.fullPath }
+    })
   }
 })

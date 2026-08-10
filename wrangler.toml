@@ -10,7 +10,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 # R2 公网访问根地址（r2.dev 或自定义域名，勿尾斜杠）
-R2_PUBLIC_BASE_URL = "https://pub-76500580e79f4ca683b12ae9254508a1.r2.dev"
+R2_PUBLIC_BASE_URL = "https://filebed.de5.net/files"
 # 单文件上限 20MB
 MAX_UPLOAD_BYTES = "20971520"
 

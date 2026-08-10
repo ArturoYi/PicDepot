@@ -1,11 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
 
-const config = useRuntimeConfig()
-const { user } = useAuthSession()
 const uploadPanelRef = ref<{ uploadFiles: (files: File[]) => void } | null>(null)
-
-const maxMb = computed(() => Number(config.public.maxUploadMb) || 20)
 
 onMounted(() => {
   window.addEventListener('paste', onPaste)
@@ -33,21 +29,20 @@ function onPaste(event: ClipboardEvent) {
 </script>
 
 <template>
-  <div class="max-w-2xl mx-auto space-y-6">
-    <div>
-      <h1 class="text-2xl font-semibold text-highlighted">
-        上传文件
-      </h1>
-      <p class="mt-1 text-muted text-sm">
-        已登录为 {{ user?.username }} · Cloudflare R2 公网直链 · 单文件 ≤ {{ maxMb }}MB
-      </p>
+  <div class="flex min-h-full items-center justify-center">
+    <div class="w-full max-w-xl">
+      <UCard
+        :ui="{
+          root: 'bg-default/80 backdrop-blur-md shadow-lg ring-default/60',
+          body: 'p-5 sm:p-6'
+        }"
+      >
+        <FileUploadPanel
+          ref="uploadPanelRef"
+          compact
+          show-result
+        />
+      </UCard>
     </div>
-
-    <UCard>
-      <FileUploadPanel
-        ref="uploadPanelRef"
-        show-result
-      />
-    </UCard>
   </div>
 </template>

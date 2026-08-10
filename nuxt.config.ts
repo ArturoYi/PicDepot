@@ -25,15 +25,6 @@ export default defineNuxtConfig({
     '/admin/**': { ssr: false }
   },
 
-  icon: {
-    clientBundle: {
-      scan: true
-    },
-    serverBundle: {
-      collections: ['lucide']
-    }
-  },
-
   compatibilityDate: '2026-06-30',
 
   nitro: {
@@ -55,6 +46,15 @@ export default defineNuxtConfig({
         commaDangle: 'never',
         braceStyle: '1tbs'
       }
+    }
+  },
+
+  icon: {
+    clientBundle: {
+      scan: true
+    },
+    serverBundle: {
+      collections: ['lucide']
     }
   }
 })
