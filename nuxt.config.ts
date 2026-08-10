@@ -1,4 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { createResolver } from 'nuxt/kit'
+import type { AliasOptions } from 'vite'
+
+const { resolve } = createResolver(import.meta.url)
+const heicToStub = resolve('./app/stubs/heic-to.stub.ts')
+
 export default defineNuxtConfig({
   modules: ['nitro-cloudflare-dev', '@nuxt/eslint', '@nuxt/ui'],
 
@@ -29,6 +35,8 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'cloudflare_module',
+    // terser 多进程在部分本地环境会提前退出；关闭后体积仍远低于 Workers 限额
+    minify: false,
     typescript: {
       tsConfig: {
         include: ['../worker-configuration.d.ts']
@@ -37,6 +45,23 @@ export default defineNuxtConfig({
     cloudflare: {
       deployConfig: true,
       nodeCompat: true
+    }
+  },
+
+  vite: {
+    optimizeDeps: {
+      include: ['heic-to']
+    }
+  },
+
+  hooks: {
+    'vite:extendConfig'(config, { isServer }) {
+      if (!isServer || !config.resolve) return
+      const current = config.resolve.alias
+      const nextAlias: AliasOptions = Array.isArray(current)
+        ? [...current, { find: /^heic-to$/, replacement: heicToStub }]
+        : { ...(current as Record<string, string> | undefined), 'heic-to': heicToStub }
+      ;(config.resolve as { alias?: AliasOptions }).alias = nextAlias
     }
   },
 

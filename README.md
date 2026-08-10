@@ -1,5 +1,7 @@
 # PicDepot
 
+![IMG20260808181351.heic](https://filebed.de5.net/files/2026/08/7bbcb631cf4061c8b5d9.heic)
+
 基于架构方案与功能取舍文档：
 
 - [docs/cloudflare-only-architecture.md](./docs/cloudflare-only-architecture.md)

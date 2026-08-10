@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isHeicLikeFile } from '~/utils/heicDetect'
 import { resolveUploadDirectory } from '~/utils/uploadDirectory'
 
 const props = withDefaults(defineProps<{
@@ -54,10 +55,23 @@ async function uploadOne(file: File) {
   }
 
   uploadProgress.value = 0
-  progressLabel.value = file.name
+  progressLabel.value = isHeicLikeFile(file)
+    ? `转换 HEIC：${file.name}`
+    : file.name
 
-  const targetDir = resolveUploadDirectory(file, directory.value)
-  const result = await uploadFileWithProgress(file, {
+  const prepared = isHeicLikeFile(file)
+    ? await (await import('~/utils/prepareUploadFile.client')).prepareUploadFile(file)
+    : file
+  if (prepared.size > maxMb.value * 1024 * 1024) {
+    throw new Error(`「${file.name}」转换后超过 ${maxMb.value}MB 限制`)
+  }
+
+  progressLabel.value = prepared.name !== file.name
+    ? `${file.name} → ${prepared.name}`
+    : prepared.name
+
+  const targetDir = resolveUploadDirectory(prepared, directory.value)
+  const result = await uploadFileWithProgress(prepared, {
     directory: targetDir,
     onProgress: (p) => {
       uploadProgress.value = p
@@ -147,9 +161,9 @@ defineExpose({ loadDirectories, uploadFiles })
 
     <UFileUpload
       multiple
-      accept="image/*,video/*,audio/*,.pdf,.zip"
+      accept="image/*,.heic,.heif,video/*,audio/*,.pdf,.zip"
       :label="compact ? '拖拽或点击上传' : '拖拽、点击或粘贴上传'"
-      :description="compact ? undefined : '支持多文件；文件夹上传请使用下方按钮'"
+      :description="compact ? undefined : '支持多文件；HEIC 会自动转为 WebP/JPEG 以便预览'"
       :disabled="uploading"
       @update:model-value="onSelect"
     />
