@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { copyFormatLabels, formatLink, type CopyFormat } from '../../shared/utils/linkFormats'
+import { copyFormatLabels, formatLink, type CopyFormat } from '#shared/utils/linkFormats'
 
 const props = defineProps<{
   url: string
