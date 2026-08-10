@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import AdminFileImageZoom from './AdminFileImageZoom.vue'
 import type { AdminFileRow } from './fileUtils'
-import { isImageFile, isPreviewableFile, isVideoFile } from './fileUtils'
+import { isImageFile, isVideoFile } from './fileUtils'
 
 defineProps<{
   deleteTarget: AdminFileRow | null
@@ -120,26 +121,30 @@ defineEmits<{
   <UModal
     :open="!!previewTarget"
     :title="previewTarget?.file_name || '预览'"
-    :ui="{ content: 'max-w-4xl w-[calc(100vw-2rem)] sm:w-full' }"
+    :ui="{
+      content: 'max-w-[min(96vw,1400px)] w-[calc(100vw-1rem)] sm:w-full',
+      body: 'p-3 sm:p-4'
+    }"
     @update:open="(v: boolean) => { if (!v) $emit('cancel-preview') }"
   >
     <template #body>
-      <div
-        v-if="previewTarget?.url"
-        class="flex justify-center"
-      >
-        <img
+      <div v-if="previewTarget?.url">
+        <AdminFileImageZoom
           v-if="isImageFile(previewTarget)"
           :src="previewTarget.url"
           :alt="previewTarget.file_name"
-          class="max-h-[75vh] max-w-full rounded-lg object-contain"
-        >
-        <video
-          v-else-if="isVideoFile(previewTarget)"
-          :src="previewTarget.url"
-          controls
-          class="max-h-[75vh] max-w-full rounded-lg"
         />
+        <div
+          v-else-if="isVideoFile(previewTarget)"
+          class="flex justify-center overflow-hidden rounded-lg bg-elevated/40 ring-1 ring-default"
+          style="height: min(82vh, 900px)"
+        >
+          <video
+            :src="previewTarget.url"
+            controls
+            class="max-h-full max-w-full object-contain"
+          />
+        </div>
       </div>
       <p
         v-else
