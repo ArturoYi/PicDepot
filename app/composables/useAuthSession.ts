@@ -28,8 +28,7 @@ export function useAuthSession() {
       return
     }
 
-    let task!: Promise<void>
-    task = (async () => {
+    const task = (async () => {
       try {
         const res = await requestFetch<{
           loggedIn: boolean
@@ -43,14 +42,17 @@ export function useAuthSession() {
         needsBootstrap.value = false
       } finally {
         loaded.value = true
-        if (nuxtApp._authSessionRefresh === task) {
-          nuxtApp._authSessionRefresh = null
-        }
       }
     })()
 
     nuxtApp._authSessionRefresh = task
-    await task
+    try {
+      await task
+    } finally {
+      if (nuxtApp._authSessionRefresh === task) {
+        nuxtApp._authSessionRefresh = null
+      }
+    }
   }
 
   /** 确保会话已解析；并发调用会复用同一请求 */

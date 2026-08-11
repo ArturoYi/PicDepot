@@ -1,3 +1,5 @@
+// Ambient Env from wrangler types (not an ES module)
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../../worker-configuration.d.ts" />
 
 /**

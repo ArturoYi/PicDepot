@@ -15,9 +15,9 @@ defineProps<{
 
 const emit = defineEmits<{
   'toggle-row': [id: string, checked: boolean]
-  preview: [row: AdminFileRow]
-  edit: [row: AdminFileRow]
-  delete: [row: AdminFileRow]
+  'preview': [row: AdminFileRow]
+  'edit': [row: AdminFileRow]
+  'delete': [row: AdminFileRow]
 }>()
 
 const gap = 12

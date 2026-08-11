@@ -20,7 +20,6 @@ useSeoMeta({
   ogTitle: config.public.siteName,
   ogDescription: description
 })
-
 </script>
 
 <template>
