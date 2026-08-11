@@ -1,6 +1,6 @@
 /**
- * Phase 0/1 上传骨架：鉴权 → R2.put → D1 insert → 返回公网直链
- * 未绑定 D1/R2 或未配置上传码时会返回明确错误。
+ * 上传：登录会话 → 校验大小 → R2.put → D1 insert → 返回公网直链。
+ * 未绑定 D1/R2 时 503；未登录时 401。生产配置来自 wrangler / Dashboard，不依赖 `.env`。
  */
 export default defineEventHandler(async (event) => {
   applyUploadCors(event)

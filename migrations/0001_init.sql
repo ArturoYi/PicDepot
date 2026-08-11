@@ -1,4 +1,4 @@
--- CloudFlare ImgBed Lite — D1 schema (Phase 0)
+-- PicDepot — D1 schema
 
 CREATE TABLE IF NOT EXISTS files (
   id TEXT PRIMARY KEY,

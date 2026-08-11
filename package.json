@@ -7,12 +7,16 @@
     "dev": "nuxt dev",
     "preview": "nuxt preview",
     "deploy": "wrangler --cwd .output deploy",
-    "db:migrate:local": "wrangler d1 migrations apply cf-imgbed-lite --local",
-    "db:migrate:remote": "wrangler d1 migrations apply cf-imgbed-lite --remote",
+    "db:migrate:local": "wrangler d1 migrations apply picdepot --local",
+    "db:migrate:remote": "wrangler d1 migrations apply picdepot --remote",
     "postinstall": "nuxt prepare && wrangler types worker-configuration.d.ts",
     "cf:types": "wrangler types worker-configuration.d.ts",
     "lint": "eslint .",
-    "typecheck": "nuxt typecheck"
+    "lint:fix": "eslint . --fix",
+    "typecheck": "nuxt typecheck",
+    "docs:dev": "pnpm --dir docs dev",
+    "docs:build": "pnpm --dir docs build",
+    "docs:preview": "pnpm --dir docs preview"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.121",

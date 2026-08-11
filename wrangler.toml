@@ -1,22 +1,29 @@
 # Cloudflare Workers 绑定配置（供本地 nitro-cloudflare-dev / 构建合并使用）
-# 1. 在 Dashboard 创建 D1 / R2 后，取消注释并填入 database_id / bucket_name
-# 2. 配置 R2 公网直链后设置 R2_PUBLIC_BASE_URL
-# 3. npm run build && npm run deploy
-# 注意：nuxt build 会生成 .output 内的 wrangler 配置，main/assets 以生成结果为准
+#
+# 应用部署方式见 docs/guide/deploy.md（说明文档，仓库不附带应用 deploy workflow）：
+#   方式 1 本地 Wrangler（不推荐）
+#   方式 2 自建 GitHub Actions（可选）
+#   方式 3 Cloudflare 控制台 Workers Builds / 连接 Git（推荐，本项目实际使用）
+#
+# 注意：
+#   - 不需要根目录 .env（.env 仅本地 Nuxt 开发可选）
+#   - 必须先创建 D1 / R2，填写 database_id / bucket_name 与 R2_PUBLIC_BASE_URL
+#   - 首次上线前：pnpm db:migrate:remote
+#   - nuxt build 生成 .output；Deploy 应对 .output，勿在未构建源码根目录直接 wrangler deploy
 
 name = "picdepot"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-# R2 公网访问根地址（r2.dev 或自定义域名，勿尾斜杠）
+# R2 公网访问根地址（r2.dev 或自定义域名，勿尾斜杠）——生产以本段 / Dashboard vars 为准，非 .env
 R2_PUBLIC_BASE_URL = "https://filebed.de5.net"
 # 单文件上限 20MB
 MAX_UPLOAD_BYTES = "20971520"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "cf-imgbed-lite"
+database_name = "picdepot"
 database_id = "7aee20a4-7ec8-444e-85a3-fec31bca1591"
 migrations_dir = "migrations"
 remote = true

@@ -1,0 +1,22 @@
+{
+  // 本项目用 @nuxt/eslint + ESLint Stylistic 管格式，不要用 Prettier
+  "prettier.enable": false,
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "vue"
+  ],
+  "[javascript]": {
+    "editor.defaultFormatter": null
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[vue]": {
+    "editor.defaultFormatter": null
+  }
+}
