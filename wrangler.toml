@@ -17,7 +17,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 # R2 公网访问根地址（r2.dev 或自定义域名，勿尾斜杠）——生产以本段 / Dashboard vars 为准，非 .env
-R2_PUBLIC_BASE_URL = "https://filebed.de5.net"
+R2_PUBLIC_BASE_URL = "https://filebed.chenyiren.top"
 # 单文件上限 20MB
 MAX_UPLOAD_BYTES = "20971520"
 
@@ -26,10 +26,13 @@ binding = "DB"
 database_name = "picdepot"
 database_id = "7aee20a4-7ec8-444e-85a3-fec31bca1591"
 migrations_dir = "migrations"
+# 默认走本地 D1。remote = true 需要 Cloudflare 凭据；Cursor 等非交互终端没有
+# CLOUDFLARE_API_TOKEN 时整个 bindings proxy 会失败，本地 DB 也会 503。
+# 需要连远程库时：wrangler login 或设置 CLOUDFLARE_API_TOKEN 后取消下一行注释。
 remote = true
 
 [[r2_buckets]]
 binding = "BUCKET"
 bucket_name = "imgbed"
-# 本地 npm run dev 默认写本地模拟 R2，与 pub-*.r2.dev 直链不一致会 404；开发时也写云端桶
+# 默认走本地模拟 R2。若公网直链 404，确认已 login / 有 token 后再开启 remote。
 remote = true

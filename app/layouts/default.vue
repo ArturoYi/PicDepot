@@ -20,6 +20,17 @@ const containerClass = computed(() => {
 })
 
 const isDark = computed(() => colorMode.value === 'dark')
+/** 主题存在 localStorage，SSR 侧未知；挂载后再同步图标，避免 hydration class mismatch */
+const displayDark = ref(false)
+const themeReady = ref(false)
+
+onMounted(() => {
+  themeReady.value = true
+  displayDark.value = isDark.value
+})
+watch(isDark, (value) => {
+  if (themeReady.value) displayDark.value = value
+})
 
 function toggleColorMode() {
   colorMode.preference = isDark.value ? 'light' : 'dark'
@@ -86,8 +97,8 @@ const primaryItems = computed<NavigationMenuItem[]>(() => {
 const actionItems = computed<NavigationMenuItem[]>(() => {
   const items: NavigationMenuItem[] = [
     {
-      label: isDark.value ? '浅色模式' : '深色模式',
-      icon: isDark.value ? 'i-lucide-sun' : 'i-lucide-moon',
+      label: displayDark.value ? '浅色模式' : '深色模式',
+      icon: displayDark.value ? 'i-lucide-sun' : 'i-lucide-moon',
       onSelect: toggleColorMode
     }
   ]
@@ -158,8 +169,8 @@ watch(() => route.fullPath, () => {
           color="neutral"
           variant="ghost"
           square
-          :icon="isDark ? 'i-lucide-sun' : 'i-lucide-moon'"
-          :aria-label="isDark ? '浅色模式' : '深色模式'"
+          :icon="displayDark ? 'i-lucide-sun' : 'i-lucide-moon'"
+          :aria-label="displayDark ? '浅色模式' : '深色模式'"
           @click="toggleColorMode"
         />
         <UButton
