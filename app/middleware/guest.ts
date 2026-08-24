@@ -4,5 +4,5 @@ export default defineNuxtRouteMiddleware(async () => {
   if (!user.value) {
     return
   }
-  return navigateTo(user.value.isAdmin ? '/admin/files' : '/', { replace: true })
+  return navigateTo('/', { replace: true })
 })

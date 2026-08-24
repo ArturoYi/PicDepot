@@ -34,7 +34,10 @@ export function useAuthSession() {
           loggedIn: boolean
           user: SessionUser | null
           needsBootstrap: boolean
-        }>('/api/auth/session')
+        }>('/api/auth/session', {
+          credentials: 'include',
+          cache: 'no-store'
+        })
         user.value = res.loggedIn ? res.user : null
         needsBootstrap.value = res.needsBootstrap
       } catch {

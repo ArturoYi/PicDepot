@@ -18,6 +18,32 @@ export interface PublicUser {
 export const SESSION_COOKIE = 'user_session'
 const DEFAULT_SESSION_MS = 14 * 24 * 60 * 60 * 1000
 
+function isHttpsRequest(event: H3Event): boolean {
+  const forwarded = getHeader(event, 'x-forwarded-proto')
+  if (forwarded) {
+    return forwarded.split(',')[0]?.trim() === 'https'
+  }
+  const visitor = getHeader(event, 'cf-visitor')
+  if (visitor) {
+    try {
+      return JSON.parse(visitor).scheme === 'https'
+    } catch {
+      // ignore malformed cf-visitor
+    }
+  }
+  return getRequestURL(event).protocol === 'https:'
+}
+
+export function getSessionCookieOptions(event: H3Event, extras?: { maxAge?: number }) {
+  return {
+    httpOnly: true,
+    sameSite: 'lax' as const,
+    path: '/',
+    secure: isHttpsRequest(event),
+    ...extras
+  }
+}
+
 export function mapPublicUser(row: UserRecord): PublicUser {
   return {
     id: row.id,
@@ -129,13 +155,9 @@ export async function createUserSession(event: H3Event, userId: string): Promise
     VALUES (?, ?, ?, ?, ?)
   `).bind(sessionId, 'user', expiresAt, now, userId).run()
 
-  setCookie(event, SESSION_COOKIE, sessionId, {
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: Math.floor(sessionMs / 1000),
-    secure: getRequestURL(event).protocol === 'https:'
-  })
+  setCookie(event, SESSION_COOKIE, sessionId, getSessionCookieOptions(event, {
+    maxAge: Math.floor(sessionMs / 1000)
+  }))
 
   return sessionId
 }

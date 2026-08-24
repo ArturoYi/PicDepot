@@ -1,4 +1,4 @@
-import { SESSION_COOKIE } from '../../utils/users'
+import { SESSION_COOKIE, getSessionCookieOptions } from '../../utils/users'
 
 export default defineEventHandler(async (event) => {
   const sessionId = getCookie(event, SESSION_COOKIE)
@@ -10,7 +10,8 @@ export default defineEventHandler(async (event) => {
       // binding 未配置时仍清除 cookie
     }
   }
-  deleteCookie(event, SESSION_COOKIE, { path: '/' })
-  deleteCookie(event, 'admin_session', { path: '/' })
+  const cookieOptions = getSessionCookieOptions(event)
+  deleteCookie(event, SESSION_COOKIE, cookieOptions)
+  deleteCookie(event, 'admin_session', cookieOptions)
   return { ok: true }
 })

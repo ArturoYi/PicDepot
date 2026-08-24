@@ -3,7 +3,7 @@ definePageMeta({ middleware: 'guest' })
 
 const toast = useToast()
 const route = useRoute()
-const { refresh, needsBootstrap } = useAuthSession()
+const { user, loaded, needsBootstrap } = useAuthSession()
 const username = ref('')
 const password = ref('')
 const loading = ref(false)
@@ -22,12 +22,12 @@ onMounted(async () => {
   }
 })
 
-function resolvePostLoginPath(isAdmin: boolean) {
+function resolvePostLoginPath() {
   const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : ''
   if (redirect.startsWith('/') && !redirect.startsWith('//')) {
     return redirect
   }
-  return isAdmin ? '/admin/files' : '/'
+  return '/'
 }
 
 async function submit() {
@@ -48,16 +48,24 @@ async function submit() {
       return
     }
 
-    const res = await $fetch<{ ok: boolean, user: { isAdmin: boolean } }>('/api/auth/login', {
+    const res = await $fetch<{ ok: boolean, user: SessionUser }>('/api/auth/login', {
       method: 'POST',
+      credentials: 'include',
       body: {
         username: username.value,
         password: password.value
       }
     })
-    await refresh()
-    toast.add({ title: '登录成功', color: 'success' })
-    await navigateTo(resolvePostLoginPath(res.user.isAdmin))
+    user.value = res.user
+    loaded.value = true
+    needsBootstrap.value = false
+    const path = resolvePostLoginPath()
+    // 整页跳转：手机 Safari / 微信 WebView 在 await 后 router.push 常被吞掉
+    if (import.meta.client) {
+      window.location.replace(path)
+      return
+    }
+    await navigateTo(path, { replace: true, external: true })
   } catch (error: unknown) {
     const err = error as { data?: { statusMessage?: string }, statusMessage?: string, message?: string }
     toast.add({
@@ -96,6 +104,7 @@ async function submit() {
           >
             <UInput
               v-model="username"
+              name="username"
               autocomplete="username"
               icon="i-lucide-user"
             />
@@ -106,6 +115,7 @@ async function submit() {
           >
             <UInput
               v-model="password"
+              name="password"
               type="password"
               autocomplete="current-password"
               icon="i-lucide-lock"

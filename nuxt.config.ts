@@ -35,6 +35,7 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/api/**': { cache: false },
+    '/api/auth/**': { headers: { 'Cache-Control': 'private, no-store' } },
     '/admin/**': { ssr: false }
   },
 

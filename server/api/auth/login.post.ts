@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
   }
 
   await createUserSession(event, user.id)
+  setHeader(event, 'Cache-Control', 'private, no-store')
   const publicUser = mapPublicUser(user)
   return { ok: true, user: publicUser }
 })
