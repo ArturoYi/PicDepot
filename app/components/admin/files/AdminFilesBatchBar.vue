@@ -12,7 +12,7 @@ defineEmits<{
 
 <template>
   <div
-    class="flex h-full flex-wrap items-center gap-2 px-2.5 rounded-lg bg-elevated/50"
+    class="flex h-full flex-nowrap items-center gap-2 overflow-x-auto px-2.5 rounded-lg bg-elevated/50"
   >
     <span class="text-sm text-muted">已选 {{ count }} 项</span>
     <UButton

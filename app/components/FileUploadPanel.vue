@@ -156,6 +156,7 @@ defineExpose({ loadDirectories, uploadFiles })
         placeholder="留空按类型自动归类"
         icon="i-lucide-folder"
         create-item
+        class="w-full"
       />
     </UFormField>
 
@@ -205,14 +206,15 @@ defineExpose({ loadDirectories, uploadFiles })
 
     <div
       v-if="showResult && lastResult"
-      class="rounded-lg ring-1 ring-default bg-elevated/60 p-3 space-y-2"
+      class="rounded-lg border border-default bg-elevated/60 p-3 space-y-2"
     >
-      <div class="flex items-center justify-between gap-2">
-        <span class="text-sm font-medium truncate">{{ lastResult.fileName }}</span>
+      <div class="flex min-w-0 items-start justify-between gap-2">
+        <span class="text-sm font-medium min-w-0 truncate">{{ lastResult.fileName }}</span>
         <CopyLinkMenu
           :url="lastResult.url"
           :file-name="lastResult.fileName"
           size="sm"
+          class="shrink-0"
         />
       </div>
       <a

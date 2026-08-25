@@ -1,15 +1,13 @@
 <script setup lang="ts">
 const {
   currentSrc,
-  placeholderColor,
   showImage
 } = usePageBackground()
 </script>
 
 <template>
   <div
-    class="pointer-events-none fixed inset-0 -z-10 transition-colors duration-300"
-    :style="{ backgroundColor: placeholderColor }"
+    class="pointer-events-none fixed inset-0 -z-10 bg-zinc-100 transition-colors duration-300 dark:bg-zinc-900"
     aria-hidden="true"
   >
     <div

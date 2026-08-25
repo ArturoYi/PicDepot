@@ -27,18 +27,19 @@ defineEmits<{ apply: [] }>()
       placeholder="目录"
       icon="i-lucide-folder"
       size="sm"
-      class="w-[calc(50%-0.25rem)] sm:w-36"
+      class="min-w-0 w-[calc(50%-0.25rem)] sm:w-36"
     />
     <UInput
       v-model="filterType"
       placeholder="image/"
       size="sm"
-      class="w-[calc(50%-0.25rem)] sm:w-28"
+      class="min-w-0 w-[calc(50%-0.25rem)] sm:w-28"
       @keyup.enter="$emit('apply')"
     />
     <UButton
       label="筛选"
       size="sm"
+      class="shrink-0"
       :loading="listLoading"
       @click="$emit('apply')"
     />

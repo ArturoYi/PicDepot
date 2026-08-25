@@ -122,7 +122,7 @@ defineEmits<{
     :open="!!previewTarget"
     :title="previewTarget?.file_name || '预览'"
     :ui="{
-      content: 'max-w-[min(96vw,1400px)] w-[calc(100vw-1rem)] sm:w-full',
+      content: 'max-w-[min(96vw,1400px)] w-[calc(100vw-1.5rem)] sm:w-full',
       body: 'p-3 sm:p-4'
     }"
     @update:open="(v: boolean) => { if (!v) $emit('cancel-preview') }"
@@ -136,8 +136,8 @@ defineEmits<{
         />
         <div
           v-else-if="isVideoFile(previewTarget)"
-          class="flex justify-center overflow-hidden rounded-lg bg-elevated/40 ring-1 ring-default"
-          style="height: min(82vh, 900px)"
+          class="flex justify-center overflow-hidden rounded-lg bg-elevated/40 border border-default"
+          style="height: min(70dvh, 900px)"
         >
           <video
             :src="previewTarget.url"

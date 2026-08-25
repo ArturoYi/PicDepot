@@ -16,3 +16,21 @@
   --color-green-900: #0A5331;
   --color-green-950: #052E16;
 }
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* 仅小屏提高描边对比；桌面保持 Nuxt UI 默认 */
+@media (max-width: 640px) {
+  :root {
+    --ui-border: var(--color-zinc-300);
+  }
+
+  .dark {
+    --ui-border: var(--color-zinc-600);
+  }
+}

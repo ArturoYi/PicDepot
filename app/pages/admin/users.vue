@@ -63,7 +63,7 @@ onMounted(load)
 
 <template>
   <div class="flex h-full min-h-0 flex-col gap-3 lg:flex-row lg:gap-4">
-    <div class="min-h-0 flex-1 overflow-hidden rounded-lg ring-1 ring-default flex flex-col">
+    <div class="min-h-0 flex-1 overflow-hidden rounded-lg border border-default flex flex-col">
       <div class="shrink-0 px-3 py-2 border-b border-default">
         <h2 class="text-sm font-medium">
           已有用户
@@ -84,7 +84,7 @@ onMounted(load)
           <li
             v-for="u in users"
             :key="u.id"
-            class="py-2.5 px-1 flex items-center justify-between gap-2"
+            class="py-2.5 px-1 flex items-center justify-between gap-2 min-w-0"
           >
             <div class="min-w-0">
               <span class="font-medium truncate">{{ u.username }}</span>
@@ -97,14 +97,14 @@ onMounted(load)
                 label="管理员"
               />
             </div>
-            <span class="text-muted text-xs shrink-0">{{ formatTime(u.createdAt) }}</span>
+            <span class="text-muted text-xs shrink-0 truncate max-w-[45%] sm:max-w-none">{{ formatTime(u.createdAt) }}</span>
           </li>
         </ul>
       </UScrollArea>
     </div>
 
     <form
-      class="shrink-0 w-full lg:w-72 space-y-3 rounded-lg ring-1 ring-default p-3 sm:p-4"
+      class="shrink-0 w-full lg:w-72 space-y-3 rounded-lg border border-default p-3 sm:p-4"
       @submit.prevent="addUser"
     >
       <h2 class="text-sm font-medium">

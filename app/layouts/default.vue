@@ -6,7 +6,10 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const colorMode = useColorMode()
 const { user, loaded, isAdmin, logout } = useAuthSession()
-const { cycleBackground } = usePageBackground()
+const { cycleBackground, currentIndex, images } = usePageBackground()
+const backgroundLabel = computed(() =>
+  `切换背景 ${currentIndex.value + 1}/${images.value.length}`
+)
 
 const menuOpen = ref(false)
 
@@ -66,13 +69,6 @@ const primaryItems = computed<NavigationMenuItem[]>(() => {
       onSelect: closeMenu
     })
   } else if (isUploadPage.value) {
-    items.push({
-      label: '切换背景',
-      icon: 'i-lucide-image',
-      onSelect: () => {
-        cycleBackground()
-      }
-    })
     if (loaded.value && isAdmin.value) {
       items.push({
         label: '后台管理',
@@ -95,13 +91,21 @@ const primaryItems = computed<NavigationMenuItem[]>(() => {
 
 /** 操作项：主题 / 退出（移动端菜单内展示） */
 const actionItems = computed<NavigationMenuItem[]>(() => {
-  const items: NavigationMenuItem[] = [
-    {
-      label: displayDark.value ? '浅色模式' : '深色模式',
-      icon: displayDark.value ? 'i-lucide-sun' : 'i-lucide-moon',
-      onSelect: toggleColorMode
-    }
-  ]
+  const items: NavigationMenuItem[] = []
+
+  if (isUploadPage.value) {
+    items.push({
+      label: backgroundLabel.value,
+      icon: 'i-lucide-image',
+      onSelect: cycleBackground
+    })
+  }
+
+  items.push({
+    label: displayDark.value ? '浅色模式' : '深色模式',
+    icon: displayDark.value ? 'i-lucide-sun' : 'i-lucide-moon',
+    onSelect: toggleColorMode
+  })
 
   if (loaded.value && user.value) {
     items.push({
@@ -126,26 +130,26 @@ watch(() => route.fullPath, () => {
 </script>
 
 <template>
-  <div class="relative flex h-dvh flex-col overflow-hidden">
+  <div class="relative flex h-dvh flex-col overflow-hidden pb-[env(safe-area-inset-bottom)]">
     <AppPageBackground v-if="isUploadPage" />
 
     <UHeader
       v-model:open="menuOpen"
-      class="shrink-0"
+      class="shrink-0 pt-[env(safe-area-inset-top)]"
       :ui="isUploadPage
-        ? { root: 'bg-default/55 backdrop-blur-md border-default/40' }
+        ? { root: 'bg-default/55 backdrop-blur-md border-default/40 max-sm:border-default' }
         : undefined"
     >
       <template #left>
         <NuxtLink
           to="/"
-          class="flex items-center gap-2 font-semibold text-highlighted"
+          class="flex min-w-0 items-center gap-2 font-semibold text-highlighted"
         >
           <UIcon
             name="i-lucide-image"
             class="size-5 text-primary"
           />
-          <span>{{ config.public.siteName }}</span>
+          <span class="truncate">{{ config.public.siteName }}</span>
         </NuxtLink>
       </template>
 
@@ -164,6 +168,16 @@ watch(() => route.fullPath, () => {
         >
           {{ user.username }}
         </span>
+        <UButton
+          v-if="isUploadPage"
+          color="neutral"
+          variant="ghost"
+          square
+          icon="i-lucide-image"
+          :aria-label="backgroundLabel"
+          :title="backgroundLabel"
+          @click="cycleBackground"
+        />
         <UButton
           class="hidden lg:inline-flex"
           color="neutral"

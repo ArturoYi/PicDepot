@@ -7,6 +7,7 @@ const props = defineProps<{
   size?: 'xs' | 'sm' | 'md'
   /** 在卡片操作栏中拉满剩余宽度 */
   block?: boolean
+  iconOnly?: boolean
 }>()
 
 const toast = useToast()
@@ -30,7 +31,8 @@ async function copy(format: CopyFormat) {
       :size="size || 'xs'"
       variant="soft"
       icon="i-lucide-copy"
-      label="复制"
+      :label="iconOnly ? undefined : '复制'"
+      :aria-label="iconOnly ? '复制链接' : undefined"
       :block="block"
     />
   </UDropdownMenu>

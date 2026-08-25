@@ -29,12 +29,12 @@ function onPaste(event: ClipboardEvent) {
 </script>
 
 <template>
-  <div class="flex min-h-full items-center justify-center">
-    <div class="w-full max-w-xl">
+  <div class="flex min-h-full items-start justify-center py-4 sm:items-center sm:py-0">
+    <div class="w-full min-w-0 max-w-xl">
       <UCard
         :ui="{
-          root: 'bg-default/80 backdrop-blur-md shadow-lg ring-default/60',
-          body: 'p-5 sm:p-6'
+          root: 'bg-default/80 backdrop-blur-md shadow-lg border-default',
+          body: 'p-4 sm:p-6'
         }"
       >
         <FileUploadPanel

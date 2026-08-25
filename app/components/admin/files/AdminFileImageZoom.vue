@@ -111,7 +111,8 @@ watch(() => props.src, () => {
   <div class="space-y-3">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <p class="text-xs text-muted">
-        滚轮缩放 · 拖拽平移 · 双击放大/复位
+        <span class="hidden sm:inline">滚轮缩放 · 拖拽平移 · 双击放大/复位</span>
+        <span class="sm:hidden">双击放大/复位，或用按钮缩放</span>
       </p>
       <div class="flex items-center gap-1">
         <UButton
@@ -153,9 +154,9 @@ watch(() => props.src, () => {
 
     <div
       ref="viewportRef"
-      class="relative overflow-hidden rounded-lg bg-elevated/40 ring-1 ring-default"
+      class="relative overflow-hidden rounded-lg bg-elevated/40 border border-default"
       :class="dragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-zoom-in'"
-      style="height: min(82vh, 900px)"
+      style="height: min(70dvh, 900px)"
       @wheel.prevent="onWheel"
       @pointerdown="onPointerDown"
       @pointermove="onPointerMove"

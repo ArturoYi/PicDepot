@@ -31,7 +31,8 @@ const lanes = computed(() => {
   if (w >= 1280) return 5
   if (w >= 1024) return 4
   if (w >= 640) return 3
-  return 2
+  if (w >= 400) return 2
+  return 1
 })
 
 const laneWidth = computed(() => {
@@ -70,10 +71,10 @@ function onPreview(file: AdminFileRow) {
       class="size-full"
     >
       <article
-        class="group relative flex flex-col overflow-hidden rounded-lg bg-default ring-1 ring-default"
+        class="group relative flex flex-col overflow-hidden rounded-lg bg-default border border-default"
         :style="{ height: `${estimateSize}px` }"
       >
-        <div class="absolute top-2 left-2 z-10">
+        <div class="absolute top-2 left-2 z-10 rounded-md bg-default/80 p-0.5">
           <UCheckbox
             :model-value="selectedIds.has(item.id)"
             @update:model-value="emit('toggle-row', item.id, !!$event)"
@@ -133,7 +134,8 @@ function onPreview(file: AdminFileRow) {
                 :url="item.url"
                 :file-name="item.file_name"
                 size="sm"
-                block
+                :block="laneWidth >= 180"
+                :icon-only="laneWidth < 180"
               />
             </div>
             <UButton

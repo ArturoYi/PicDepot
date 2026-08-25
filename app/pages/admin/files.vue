@@ -218,17 +218,17 @@ onMounted(async () => {
 <template>
   <div class="flex h-full min-h-0 flex-col gap-2">
     <div class="shrink-0 space-y-2">
-      <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <AdminFilesFilters
           v-model:filter-q="filterQ"
           v-model:filter-dir="filterDir"
           v-model:filter-type="filterType"
           :directory-items="directoryItems"
           :list-loading="listLoading"
-          class="min-w-0 flex-1"
+          class="min-w-0 w-full sm:flex-1"
           @apply="applyFilters"
         />
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center justify-end gap-1.5">
           <UCheckbox
             v-if="files.length"
             :model-value="selectAll"
@@ -260,7 +260,7 @@ onMounted(async () => {
     </div>
 
     <div
-      class="relative min-h-0 flex-1 overflow-hidden rounded-lg ring-1 ring-default"
+      class="relative min-h-0 flex-1 overflow-hidden rounded-lg border border-default"
       :class="{ 'opacity-60 pointer-events-none': listLoading && files.length }"
     >
       <div
@@ -305,7 +305,7 @@ onMounted(async () => {
       v-if="total > 0 || listLoading"
       class="shrink-0 flex flex-col sm:flex-row items-center justify-between gap-2 pt-1"
     >
-      <p class="text-xs text-muted">
+      <p class="text-xs text-muted text-center sm:text-left">
         共 {{ total }} 条 · 每页 {{ limit }} · 第 {{ page }} / {{ totalPages }} 页
       </p>
       <UPagination
@@ -313,6 +313,7 @@ onMounted(async () => {
         :total="total"
         :items-per-page="limit"
         :disabled="listLoading"
+        :sibling-count="width < 640 ? 0 : 1"
         size="sm"
         @update:page="onPageChange"
       />

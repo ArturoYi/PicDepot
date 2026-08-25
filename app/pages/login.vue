@@ -80,8 +80,8 @@ async function submit() {
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 items-center justify-center py-6">
-    <div class="w-full max-w-md">
+  <div class="flex h-full min-h-0 items-start justify-center py-6 sm:items-center">
+    <div class="w-full min-w-0 max-w-md">
       <UCard>
         <template #header>
           <div class="space-y-1">
@@ -107,6 +107,7 @@ async function submit() {
               name="username"
               autocomplete="username"
               icon="i-lucide-user"
+              class="w-full"
             />
           </UFormField>
           <UFormField
@@ -119,6 +120,7 @@ async function submit() {
               type="password"
               autocomplete="current-password"
               icon="i-lucide-lock"
+              class="w-full"
             />
           </UFormField>
 

@@ -4,13 +4,16 @@ const STORAGE_KEY = 'picdepot-bg-index'
 
 /** 浅色 / 深色两组背景；后续可直接往数组追加图片路径 */
 export const BACKGROUND_SETS: Record<BackgroundGroup, string[]> = {
-  light: ['/backgrounds/light.png'],
-  dark: ['/backgrounds/dark.png']
-}
-
-export const BACKGROUND_PLACEHOLDER: Record<BackgroundGroup, string> = {
-  light: '#f4f4f5',
-  dark: '#18181b'
+  light: [
+    '/backgrounds/light-mist.jpg',
+    '/backgrounds/light-paper.jpg',
+    '/backgrounds/light-sky.jpg'
+  ],
+  dark: [
+    '/backgrounds/dark-night.jpg',
+    '/backgrounds/dark-aurora.jpg',
+    '/backgrounds/dark-ink.jpg'
+  ]
 }
 
 interface BgIndexPrefs {
@@ -76,8 +79,6 @@ export function usePageBackground() {
 
   const currentSrc = computed(() => images.value[currentIndex.value] || null)
 
-  const placeholderColor = computed(() => BACKGROUND_PLACEHOLDER[group.value])
-
   const showImage = computed(() =>
     Boolean(currentSrc.value && readySrc.value === currentSrc.value)
   )
@@ -136,7 +137,6 @@ export function usePageBackground() {
     images,
     currentIndex,
     currentSrc,
-    placeholderColor,
     showImage,
     loading,
     cycleBackground
