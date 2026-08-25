@@ -21,6 +21,8 @@ const emit = defineEmits<{
 }>()
 
 const gap = 12
+/** 文件名 + 元信息 + 操作栏，预留给虚拟列表的固定底部高度 */
+const cardFooterPx = 112
 const rootEl = ref<HTMLElement | null>(null)
 const { width } = useElementWidth(rootEl)
 
@@ -37,8 +39,8 @@ const laneWidth = computed(() => {
   return Math.max(120, (w - (lanes.value - 1) * gap) / lanes.value)
 })
 
-/** 缩略图区 + 底部信息栏的估计高度 */
-const estimateSize = computed(() => Math.round(laneWidth.value + 88))
+/** 卡片总高：近似正方形图区 + 固定底部，避免操作栏被裁切 */
+const estimateSize = computed(() => Math.round(laneWidth.value + cardFooterPx))
 
 const virtualize = computed(() => ({
   gap,
@@ -68,7 +70,8 @@ function onPreview(file: AdminFileRow) {
       class="size-full"
     >
       <article
-        class="group relative flex h-full flex-col overflow-hidden rounded-lg bg-elevated/40 ring-1 ring-default"
+        class="group relative flex flex-col overflow-hidden rounded-lg bg-default ring-1 ring-default"
+        :style="{ height: `${estimateSize}px` }"
       >
         <div class="absolute top-2 left-2 z-10">
           <UCheckbox
@@ -79,7 +82,7 @@ function onPreview(file: AdminFileRow) {
 
         <button
           type="button"
-          class="relative block w-full aspect-square bg-elevated focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          class="relative min-h-0 w-full flex-1 overflow-hidden bg-elevated focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           :aria-label="`预览 ${item.file_name}`"
           @click="onPreview(item)"
         >
@@ -87,7 +90,7 @@ function onPreview(file: AdminFileRow) {
             v-if="isImageFile(item) && item.url"
             :src="item.url"
             :alt="item.file_name"
-            class="size-full object-cover"
+            class="absolute inset-0 size-full object-cover object-center"
             :loading="index < lanes * 2 ? 'eager' : 'lazy'"
             decoding="async"
           >
@@ -106,36 +109,50 @@ function onPreview(file: AdminFileRow) {
           />
         </button>
 
-        <div class="flex min-h-0 flex-1 flex-col gap-1.5 p-2">
-          <p
-            class="text-xs font-medium leading-snug line-clamp-2"
-            :title="item.file_name"
-          >
-            {{ item.file_name }}
-          </p>
-          <p class="text-[10px] text-muted truncate">
-            {{ formatFileBytes(item.size_bytes) }} · {{ formatFileTime(item.created_at) }}
-          </p>
-          <div class="mt-auto flex items-center gap-0.5">
-            <CopyLinkMenu
+        <div
+          class="flex shrink-0 flex-col"
+          :style="{ height: `${cardFooterPx}px` }"
+        >
+          <div class="min-h-0 flex-1 px-2.5 pt-2 pb-1">
+            <p
+              class="text-xs font-medium leading-snug line-clamp-2"
+              :title="item.file_name"
+            >
+              {{ item.file_name }}
+            </p>
+            <p class="mt-0.5 text-[10px] text-muted truncate">
+              {{ formatFileBytes(item.size_bytes) }} · {{ formatFileTime(item.created_at) }}
+            </p>
+          </div>
+          <div class="flex shrink-0 items-center gap-1 border-t border-default bg-muted px-1.5 py-1.5">
+            <div
               v-if="item.url"
-              :url="item.url"
-              :file-name="item.file_name"
-              size="xs"
-            />
+              class="min-w-0 flex-1"
+            >
+              <CopyLinkMenu
+                :url="item.url"
+                :file-name="item.file_name"
+                size="sm"
+                block
+              />
+            </div>
             <UButton
-              size="xs"
-              variant="ghost"
+              size="sm"
+              variant="soft"
+              class="shrink-0"
               icon="i-lucide-pencil"
               aria-label="编辑"
+              title="编辑"
               @click="emit('edit', item)"
             />
             <UButton
-              size="xs"
-              variant="ghost"
+              size="sm"
+              variant="soft"
               color="error"
+              class="shrink-0"
               icon="i-lucide-trash-2"
               aria-label="删除"
+              title="删除"
               @click="emit('delete', item)"
             />
           </div>

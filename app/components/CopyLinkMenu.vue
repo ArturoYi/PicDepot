@@ -5,6 +5,8 @@ const props = defineProps<{
   url: string
   fileName?: string
   size?: 'xs' | 'sm' | 'md'
+  /** 在卡片操作栏中拉满剩余宽度 */
+  block?: boolean
 }>()
 
 const toast = useToast()
@@ -29,6 +31,7 @@ async function copy(format: CopyFormat) {
       variant="soft"
       icon="i-lucide-copy"
       label="复制"
+      :block="block"
     />
   </UDropdownMenu>
 </template>
