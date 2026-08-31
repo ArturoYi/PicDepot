@@ -17,8 +17,11 @@ const dirFilterItems = computed(() =>
   }))
 )
 
+/** SelectItem 不能用空字符串，否则刷新时 Reka UI 会抛 500 */
+const TYPE_ALL = '__all__'
+
 const typeItems = [
-  { label: '全部类型', value: '' },
+  { label: '全部类型', value: TYPE_ALL },
   { label: '图片', value: 'image/' },
   { label: '视频', value: 'video/' },
   { label: '音频', value: 'audio/' }
@@ -30,7 +33,7 @@ function onDirChange(value: string | null | undefined) {
 }
 
 function onTypeChange(value: string | null | undefined) {
-  filterType.value = value || ''
+  filterType.value = !value || value === TYPE_ALL ? '' : value
   emit('apply')
 }
 </script>
@@ -58,7 +61,7 @@ function onTypeChange(value: string | null | undefined) {
       @update:model-value="onDirChange"
     />
     <USelect
-      :model-value="filterType"
+      :model-value="filterType || TYPE_ALL"
       :items="typeItems"
       value-key="value"
       size="sm"

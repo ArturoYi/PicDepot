@@ -25,6 +25,17 @@
   }
 
   /*
+    禁止移动端浏览器把双指捏合/双击当成「整页缩放」。
+    touch-action 会与祖先取交集，所以写在 html/body 即可约束整站；
+    预览框内再用 touch-action: none 自行处理图片缩放。
+  */
+  html,
+  body,
+  #__nuxt {
+    touch-action: pan-x pan-y;
+  }
+
+  /*
     描边策略（彻底避免移动端「边框消失」）：
 
     1. Nuxt UI 默认用 inset ring（box-shadow）当边框。

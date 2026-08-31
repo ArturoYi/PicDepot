@@ -138,7 +138,10 @@ defineEmits<{
     :title="previewTarget?.file_name || '预览'"
     :ui="{
       content: 'max-w-[min(96vw,1400px)] w-[calc(100vw-1.5rem)] sm:w-full',
-      body: 'p-3 sm:p-4'
+      header: 'min-w-0',
+      wrapper: 'min-w-0',
+      title: 'truncate',
+      body: 'p-3 sm:p-4 overflow-hidden'
     }"
     @update:open="(v: boolean) => { if (!v) $emit('cancel-preview') }"
   >
@@ -154,8 +157,8 @@ defineEmits<{
           class="ui-frame"
         >
           <div
-            class="ui-frame-clip flex justify-center bg-elevated/40"
-            style="height: min(70dvh, 900px)"
+            class="ui-frame-clip flex justify-center overscroll-none bg-elevated/40"
+            style="height: min(70dvh, 900px, calc(100dvh - 14rem))"
           >
             <video
               :src="previewTarget.url"
