@@ -65,11 +65,19 @@ defineEmits<{
         <UFormField label="文件名">
           <UInput v-model="editNameModel" />
         </UFormField>
-        <UFormField label="目录">
+        <UFormField
+          label="目录"
+          hint="可输入新目录名；目录是分类标签，不会改文件链接。留空为根目录。"
+        >
           <UInputMenu
             v-model="editDirectoryModel"
+            mode="autocomplete"
             :items="directoryItems"
-            create-item
+            icon="i-lucide-folder"
+            clear
+            placeholder="输入或选择目录"
+            :content="{ hideWhenEmpty: true }"
+            class="w-full"
           />
         </UFormField>
       </div>
@@ -94,12 +102,19 @@ defineEmits<{
     title="批量移动目录"
   >
     <template #body>
-      <UFormField label="目标目录">
+      <UFormField
+        label="目标目录"
+        hint="可输入新目录名；留空表示根目录。"
+      >
         <UInputMenu
           v-model="batchMoveDirModel"
+          mode="autocomplete"
           :items="directoryItems"
-          create-item
-          placeholder="留空表示根目录"
+          icon="i-lucide-folder"
+          clear
+          placeholder="输入或选择目录，留空为根目录"
+          :content="{ hideWhenEmpty: true }"
+          class="w-full"
         />
       </UFormField>
     </template>
@@ -136,14 +151,18 @@ defineEmits<{
         />
         <div
           v-else-if="isVideoFile(previewTarget)"
-          class="flex justify-center overflow-hidden rounded-lg bg-elevated/40 border border-default"
-          style="height: min(70dvh, 900px)"
+          class="ui-frame"
         >
-          <video
-            :src="previewTarget.url"
-            controls
-            class="max-h-full max-w-full object-contain"
-          />
+          <div
+            class="ui-frame-clip flex justify-center bg-elevated/40"
+            style="height: min(70dvh, 900px)"
+          >
+            <video
+              :src="previewTarget.url"
+              controls
+              class="max-h-full max-w-full object-contain"
+            />
+          </div>
         </div>
       </div>
       <p

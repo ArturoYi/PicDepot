@@ -63,8 +63,8 @@ onMounted(load)
 
 <template>
   <div class="flex h-full min-h-0 flex-col gap-3 lg:flex-row lg:gap-4">
-    <div class="min-h-0 flex-1 overflow-hidden rounded-lg border border-default flex flex-col">
-      <div class="shrink-0 px-3 py-2 border-b border-default">
+    <div class="ui-frame flex min-h-0 min-w-0 flex-1 flex-col">
+      <div class="shrink-0 border-b border-default px-3 py-2">
         <h2 class="text-sm font-medium">
           已有用户
         </h2>
@@ -104,7 +104,7 @@ onMounted(load)
     </div>
 
     <form
-      class="shrink-0 w-full lg:w-72 space-y-3 rounded-lg border border-default p-3 sm:p-4"
+      class="ui-frame w-full shrink-0 space-y-3 p-3 sm:p-4 lg:w-72"
       @submit.prevent="addUser"
     >
       <h2 class="text-sm font-medium">

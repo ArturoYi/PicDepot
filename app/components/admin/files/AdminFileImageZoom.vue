@@ -152,26 +152,28 @@ watch(() => props.src, () => {
       </div>
     </div>
 
-    <div
-      ref="viewportRef"
-      class="relative overflow-hidden rounded-lg bg-elevated/40 border border-default"
-      :class="dragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-zoom-in'"
-      style="height: min(70dvh, 900px)"
-      @wheel.prevent="onWheel"
-      @pointerdown="onPointerDown"
-      @pointermove="onPointerMove"
-      @pointerup="onPointerUp"
-      @pointercancel="onPointerUp"
-      @dblclick="onDblClick"
-    >
-      <div class="absolute inset-0 flex items-center justify-center">
-        <img
-          :src="src"
-          :alt="alt || ''"
-          class="max-h-full max-w-full object-contain select-none pointer-events-none transition-transform duration-75 will-change-transform"
-          :style="transformStyle"
-          draggable="false"
-        >
+    <div class="ui-frame">
+      <div
+        ref="viewportRef"
+        class="ui-frame-clip relative bg-elevated/40"
+        :class="dragging ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-zoom-in'"
+        style="height: min(70dvh, 900px)"
+        @wheel.prevent="onWheel"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @pointercancel="onPointerUp"
+        @dblclick="onDblClick"
+      >
+        <div class="absolute inset-0 flex items-center justify-center">
+          <img
+            :src="src"
+            :alt="alt || ''"
+            class="pointer-events-none max-h-full max-w-full object-contain select-none transition-transform duration-75 will-change-transform"
+            :style="transformStyle"
+            draggable="false"
+          >
+        </div>
       </div>
     </div>
   </div>

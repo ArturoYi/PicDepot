@@ -29,20 +29,19 @@ function onPaste(event: ClipboardEvent) {
 </script>
 
 <template>
-  <div class="flex min-h-full items-start justify-center py-4 sm:items-center sm:py-0">
-    <div class="w-full min-w-0 max-w-xl">
-      <UCard
-        :ui="{
-          root: 'bg-default/80 backdrop-blur-md shadow-lg border-default',
-          body: 'p-4 sm:p-6'
-        }"
-      >
-        <FileUploadPanel
-          ref="uploadPanelRef"
-          compact
-          show-result
-        />
-      </UCard>
-    </div>
+  <div class="flex min-h-full items-start justify-center py-4 sm:items-center sm:py-6">
+    <UCard
+      class="w-full min-w-0 max-w-xl"
+      :ui="{
+        root: 'bg-default/80 backdrop-blur-md shadow-lg',
+        body: 'p-4 sm:p-6'
+      }"
+    >
+      <FileUploadPanel
+        ref="uploadPanelRef"
+        compact
+        show-result
+      />
+    </UCard>
   </div>
 </template>

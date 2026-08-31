@@ -23,6 +23,7 @@ const filterQ = ref('')
 const filterDir = ref('')
 const filterType = ref('')
 const directoryItems = ref<string[]>([])
+const directoryStats = ref<Array<{ directory: string, count: number }>>([])
 
 const selectedIds = ref<Set<string>>(new Set())
 const selectAll = ref(false)
@@ -53,10 +54,15 @@ function buildQuery() {
 
 async function loadDirectories() {
   try {
-    const res = await $fetch<{ directories: string[] }>('/api/admin/directories')
+    const res = await $fetch<{
+      directories: string[]
+      items?: Array<{ directory: string, count: number }>
+    }>('/api/admin/directories')
     directoryItems.value = res.directories
+    directoryStats.value = res.items ?? res.directories.map(directory => ({ directory, count: 0 }))
   } catch {
     directoryItems.value = []
+    directoryStats.value = []
   }
 }
 
@@ -218,17 +224,17 @@ onMounted(async () => {
 <template>
   <div class="flex h-full min-h-0 flex-col gap-2">
     <div class="shrink-0 space-y-2">
-      <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <AdminFilesFilters
           v-model:filter-q="filterQ"
           v-model:filter-dir="filterDir"
           v-model:filter-type="filterType"
-          :directory-items="directoryItems"
+          :directory-stats="directoryStats"
           :list-loading="listLoading"
-          class="min-w-0 w-full sm:flex-1"
+          class="min-w-0 w-full md:flex-1"
           @apply="applyFilters"
         />
-        <div class="flex items-center justify-end gap-1.5">
+        <div class="flex items-center justify-between gap-2 sm:justify-end">
           <UCheckbox
             v-if="files.length"
             :model-value="selectAll"
@@ -260,52 +266,54 @@ onMounted(async () => {
     </div>
 
     <div
-      class="relative min-h-0 flex-1 overflow-hidden rounded-lg border border-default"
+      class="ui-frame relative min-h-0 flex-1"
       :class="{ 'opacity-60 pointer-events-none': listLoading && files.length }"
     >
-      <div
-        v-if="listLoading && !files.length"
-        class="absolute inset-0 z-10 flex items-center justify-center bg-default/50"
-      >
-        <UIcon
-          name="i-lucide-loader-circle"
-          class="size-8 animate-spin text-primary"
+      <div class="ui-frame-clip absolute inset-0">
+        <div
+          v-if="listLoading && !files.length"
+          class="absolute inset-0 z-10 flex items-center justify-center bg-default/50"
+        >
+          <UIcon
+            name="i-lucide-loader-circle"
+            class="size-8 animate-spin text-primary"
+          />
+        </div>
+
+        <div
+          v-if="!listLoading && !files.length"
+          class="flex h-full flex-col items-center justify-center gap-3 p-6 text-center"
+        >
+          <p class="text-sm text-muted">
+            暂无上传记录
+          </p>
+          <UButton
+            to="/"
+            icon="i-lucide-upload"
+            label="上传第一个文件"
+            color="primary"
+            variant="soft"
+            size="sm"
+          />
+        </div>
+
+        <AdminFilesMasonry
+          v-else-if="files.length"
+          :files="files"
+          :selected-ids="selectedIds"
+          @toggle-row="toggleRow"
+          @preview="openPreview"
+          @edit="openEdit"
+          @delete="deleteTarget = $event"
         />
       </div>
-
-      <div
-        v-if="!listLoading && !files.length"
-        class="flex h-full flex-col items-center justify-center gap-3 p-6 text-center"
-      >
-        <p class="text-sm text-muted">
-          暂无上传记录
-        </p>
-        <UButton
-          to="/"
-          icon="i-lucide-upload"
-          label="上传第一个文件"
-          color="primary"
-          variant="soft"
-          size="sm"
-        />
-      </div>
-
-      <AdminFilesMasonry
-        v-else-if="files.length"
-        :files="files"
-        :selected-ids="selectedIds"
-        @toggle-row="toggleRow"
-        @preview="openPreview"
-        @edit="openEdit"
-        @delete="deleteTarget = $event"
-      />
     </div>
 
     <div
       v-if="total > 0 || listLoading"
-      class="shrink-0 flex flex-col sm:flex-row items-center justify-between gap-2 pt-1"
+      class="flex shrink-0 flex-col items-stretch gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between"
     >
-      <p class="text-xs text-muted text-center sm:text-left">
+      <p class="text-center text-xs text-muted sm:text-left">
         共 {{ total }} 条 · 每页 {{ limit }} · 第 {{ page }} / {{ totalPages }} 页
       </p>
       <UPagination
@@ -315,6 +323,7 @@ onMounted(async () => {
         :disabled="listLoading"
         :sibling-count="width < 640 ? 0 : 1"
         size="sm"
+        class="justify-center sm:justify-end"
         @update:page="onPageChange"
       />
     </div>

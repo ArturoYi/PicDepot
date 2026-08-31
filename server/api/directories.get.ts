@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   await requireUserSession(event)
   const db = getDb(event)
   const query = getQuery(event)
-  const limit = Math.min(Number(query.limit) || 50, 200)
+  const limit = Math.min(Number(query.limit) || 500, 2000)
 
   const result = await db.prepare(`
     SELECT DISTINCT directory FROM files

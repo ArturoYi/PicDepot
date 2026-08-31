@@ -1,19 +1,25 @@
 export default defineEventHandler(async (event) => {
   await requireAdminSession(event)
   const db = getDb(event)
-  const query = getQuery(event)
-  const limit = Math.min(Number(query.limit) || 50, 200)
 
   const result = await db.prepare(`
-    SELECT DISTINCT directory FROM files
-    WHERE directory != ''
-    ORDER BY directory ASC
-    LIMIT ?
-  `).bind(limit).all()
+    SELECT directory, COUNT(*) AS count
+    FROM files
+    GROUP BY directory
+    ORDER BY
+      CASE WHEN directory = '' THEN 0 ELSE 1 END,
+      directory ASC
+    LIMIT 2000
+  `).all()
 
-  const directories = (result.results || [])
-    .map((row: Record<string, unknown>) => String(row.directory || ''))
+  const items = (result.results || []).map((row: Record<string, unknown>) => ({
+    directory: String(row.directory || ''),
+    count: Number(row.count) || 0
+  }))
+
+  const directories = items
+    .map(item => item.directory)
     .filter(Boolean)
 
-  return { directories }
+  return { directories, items }
 })

@@ -71,7 +71,7 @@ function onPreview(file: AdminFileRow) {
       class="size-full"
     >
       <article
-        class="group relative flex flex-col overflow-hidden rounded-lg bg-default border border-default"
+        class="group relative flex flex-col rounded-lg border border-default bg-default"
         :style="{ height: `${estimateSize}px` }"
       >
         <div class="absolute top-2 left-2 z-10 rounded-md bg-default/80 p-0.5">
@@ -122,7 +122,7 @@ function onPreview(file: AdminFileRow) {
               {{ item.file_name }}
             </p>
             <p class="mt-0.5 text-[10px] text-muted truncate">
-              {{ formatFileBytes(item.size_bytes) }} · {{ formatFileTime(item.created_at) }}
+              {{ formatFileBytes(item.size_bytes) }} · {{ item.directory || '根目录' }}
             </p>
           </div>
           <div class="flex shrink-0 items-center gap-1 border-t border-default bg-muted px-1.5 py-1.5">

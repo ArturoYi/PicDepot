@@ -21,16 +21,74 @@
   html {
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /*
+    描边策略（彻底避免移动端「边框消失」）：
+
+    1. Nuxt UI 默认用 inset ring（box-shadow）当边框。
+       祖先只要有 overflow:hidden + border-radius，WebKit 就会把这条 shadow 裁掉。
+    2. 同一元素上 overflow:hidden + radius + 1px border，iOS 也会把真 border 抗锯齿掉。
+    3. 因此：表单控件一律真实 border，并清掉 inset ring；卡片禁止 overflow:hidden。
+    4. 需要裁切内容时，边框放外层、overflow 放内层（见 .ui-frame / .ui-frame-clip）。
+  */
+  :where(input, textarea, select)[data-slot="base"],
+  :where(button[data-slot="base"][role="combobox"]) {
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--ui-border-accented);
+    --tw-inset-ring-shadow: 0 0 #0000;
+    --tw-ring-shadow: 0 0 #0000;
+  }
+
+  /* UCard：divide-y + rounded-lg。禁止 overflow 裁自己的边框 */
+  :where([data-slot="root"].divide-y.rounded-lg) {
+    overflow: visible;
+  }
+
+  /* 复选框方块：默认 ring-inset + overflow-hidden，手机上经常只剩空白 */
+  :where([role="checkbox"][data-slot="base"]) {
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--ui-border-accented);
+    --tw-inset-ring-shadow: 0 0 #0000;
+    overflow: visible;
   }
 }
 
-/* 仅小屏提高描边对比；桌面保持 Nuxt UI 默认 */
-@media (max-width: 640px) {
+@media (max-width: 640px), (pointer: coarse) {
   :root {
     --ui-border: var(--color-zinc-300);
+    --ui-border-accented: var(--color-zinc-400);
   }
 
   .dark {
     --ui-border: var(--color-zinc-600);
+    --ui-border-accented: var(--color-zinc-500);
   }
+
+  /*
+    iOS 对 <16px 的 input 会聚焦缩放，缩放后再叠加亚像素取整，1px 边框更容易没。
+    同时抬高触控高度。
+  */
+  :where(input, textarea, select)[data-slot="base"],
+  :where(button[data-slot="base"][role="combobox"]) {
+    font-size: 1rem;
+    min-height: 2.5rem;
+  }
+}
+
+/* 外框描边；裁切交给内部 .ui-frame-clip，避免 overflow 吃掉 1px 边框 */
+@utility ui-frame {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--ui-border);
+  border-radius: var(--radius-lg);
+}
+
+@utility ui-frame-clip {
+  overflow: hidden;
+  border-radius: inherit;
+  min-height: 0;
 }

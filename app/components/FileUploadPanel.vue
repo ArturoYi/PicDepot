@@ -166,6 +166,8 @@ defineExpose({ loadDirectories, uploadFiles })
       :label="compact ? '拖拽或点击上传' : '拖拽、点击或粘贴上传'"
       :description="compact ? undefined : '支持多文件；HEIC 会自动转为 WebP/JPEG 以便预览'"
       :disabled="uploading"
+      class="w-full"
+      :ui="{ base: 'min-h-32 sm:min-h-40' }"
       @update:model-value="onSelect"
     />
 
@@ -206,7 +208,7 @@ defineExpose({ loadDirectories, uploadFiles })
 
     <div
       v-if="showResult && lastResult"
-      class="rounded-lg border border-default bg-elevated/60 p-3 space-y-2"
+      class="ui-frame space-y-2 bg-elevated/60 p-3"
     >
       <div class="flex min-w-0 items-start justify-between gap-2">
         <span class="text-sm font-medium min-w-0 truncate">{{ lastResult.fileName }}</span>
