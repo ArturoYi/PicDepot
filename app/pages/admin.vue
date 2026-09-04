@@ -12,7 +12,7 @@ const isFilesPage = computed(() => route.path.startsWith('/admin/files'))
 <template>
   <div
     class="flex h-full min-h-0 flex-col overflow-hidden"
-    :class="isFilesPage ? 'py-2 sm:py-3' : 'py-3 sm:py-4'"
+    :class="isFilesPage ? 'py-1.5 sm:py-3' : 'py-3 sm:py-4'"
   >
     <div
       v-if="!isFilesPage"

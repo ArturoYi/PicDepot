@@ -12,22 +12,32 @@ defineEmits<{
 
 <template>
   <div
-    class="flex h-full flex-nowrap items-center gap-2 overflow-x-auto rounded-lg border border-default bg-elevated/50 px-2.5"
+    class="flex h-full flex-nowrap items-center gap-2 overflow-x-auto rounded-lg border border-default bg-default/90 px-2.5 shadow-lg backdrop-blur-md"
   >
-    <span class="text-sm text-muted">已选 {{ count }} 项</span>
-    <UButton
+    <UBadge
+      color="primary"
+      variant="subtle"
       size="sm"
-      color="error"
-      variant="soft"
-      label="批量删除"
-      :loading="batchWorking"
-      @click="$emit('batch-delete')"
+      :label="`已选 ${count}`"
     />
-    <UButton
-      size="sm"
-      variant="soft"
-      label="批量移动"
-      @click="$emit('batch-move')"
-    />
+    <div class="ml-auto flex items-center gap-1.5">
+      <UButton
+        size="xs"
+        color="error"
+        variant="soft"
+        icon="i-lucide-trash-2"
+        label="删除"
+        :loading="batchWorking"
+        @click="$emit('batch-delete')"
+      />
+      <UButton
+        size="xs"
+        color="neutral"
+        variant="soft"
+        icon="i-lucide-folder-input"
+        label="移动"
+        @click="$emit('batch-move')"
+      />
+    </div>
   </div>
 </template>

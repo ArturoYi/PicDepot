@@ -6,19 +6,34 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const colorMode = useColorMode()
 const { user, loaded, isAdmin, logout } = useAuthSession()
-const { cycleBackground, currentIndex, images } = usePageBackground()
+const toast = useToast()
+const { cycleBackground, currentIndex, images, loading: backgroundLoading } = usePageBackground()
 const backgroundLabel = computed(() =>
   `切换背景 ${currentIndex.value + 1}/${images.value.length}`
 )
+const backgroundCount = computed(() =>
+  `${currentIndex.value + 1}/${images.value.length}`
+)
+
+function onCycleBackground() {
+  if (!images.value.length) return
+  cycleBackground()
+  toast.add({
+    title: `已切换背景 ${currentIndex.value + 1}/${images.value.length}`,
+    icon: 'i-lucide-image',
+    color: 'neutral'
+  })
+}
 
 const menuOpen = ref(false)
 
 const isUploadPage = computed(() => route.path === '/')
 const isAdminRoute = computed(() => route.path.startsWith('/admin'))
+const isFilesPage = computed(() => route.path.startsWith('/admin/files'))
 
 const containerClass = computed(() => {
   if (isAdminRoute.value) return 'max-w-[1440px] w-full h-full flex flex-col'
-  if (isUploadPage.value) return 'max-w-none w-full h-full flex flex-col'
+  if (isUploadPage.value) return 'max-w-none w-full h-full'
   return 'w-full h-full flex flex-col'
 })
 
@@ -97,7 +112,7 @@ const actionItems = computed<NavigationMenuItem[]>(() => {
     items.push({
       label: backgroundLabel.value,
       icon: 'i-lucide-image',
-      onSelect: cycleBackground
+      onSelect: onCycleBackground
     })
   }
 
@@ -171,12 +186,13 @@ watch(() => route.fullPath, () => {
         <UButton
           v-if="isUploadPage"
           color="neutral"
-          variant="ghost"
-          square
+          variant="soft"
           icon="i-lucide-image"
+          :label="backgroundCount"
+          :loading="backgroundLoading"
           :aria-label="backgroundLabel"
           :title="backgroundLabel"
-          @click="cycleBackground"
+          @click="onCycleBackground"
         />
         <UButton
           class="hidden lg:inline-flex"
@@ -219,8 +235,12 @@ watch(() => route.fullPath, () => {
 
     <UMain class="flex min-h-0 flex-1 flex-col overflow-hidden">
       <UContainer
-        class="min-h-0 flex-1 overflow-hidden py-0"
-        :class="containerClass"
+        class="min-h-0 flex-1 py-0"
+        :class="[
+          containerClass,
+          isUploadPage ? 'overflow-y-auto' : 'overflow-hidden',
+          isFilesPage && 'max-sm:!px-2'
+        ]"
       >
         <slot />
       </UContainer>

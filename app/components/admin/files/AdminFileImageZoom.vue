@@ -14,7 +14,13 @@ const scale = ref(1)
 const offsetX = ref(0)
 const offsetY = ref(0)
 const interacting = ref(false)
+const imageReady = ref(false)
 const viewportRef = ref<HTMLElement | null>(null)
+const imgEl = ref<HTMLImageElement | null>(null)
+
+function markImageReady() {
+  imageReady.value = true
+}
 
 type Point = { x: number, y: number }
 
@@ -288,9 +294,14 @@ function onDblClick(event: MouseEvent) {
 }
 
 watch(() => props.src, () => {
+  imageReady.value = false
   resetView()
   endInteraction()
 })
+
+watch(imgEl, (el) => {
+  if (el?.complete && el.naturalWidth > 0) markImageReady()
+}, { flush: 'post' })
 
 watch(viewportRef, (el, prev) => {
   prev?.removeEventListener('touchstart', onTouchStart)
@@ -371,13 +382,24 @@ onUnmounted(() => {
         @dblclick="onDblClick"
       >
         <div class="absolute inset-0 flex items-center justify-center overflow-hidden">
+          <USkeleton
+            v-if="!imageReady"
+            class="absolute inset-0 size-full rounded-none"
+          />
           <img
+            ref="imgEl"
             :src="src"
             :alt="alt || ''"
             class="pointer-events-none max-h-full max-w-full object-contain select-none will-change-transform"
-            :class="{ 'transition-transform duration-75': !interacting }"
+            :class="[
+              imageReady ? 'opacity-100' : 'opacity-0',
+              interacting ? '' : 'transition-transform duration-75',
+              'transition-opacity duration-300'
+            ]"
             :style="transformStyle"
             draggable="false"
+            @load="markImageReady"
+            @error="markImageReady"
           >
         </div>
       </div>

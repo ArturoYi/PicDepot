@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { isHeicLikeFile } from '~/utils/heicDetect'
 import { resolveUploadDirectory } from '~/utils/uploadDirectory'
+import type { UploadQueueItem } from './uploadQueue'
 
 const props = withDefaults(defineProps<{
   directoriesEndpoint?: string
@@ -21,18 +22,37 @@ const toast = useToast()
 const { directory } = useUploadPreferences()
 
 const uploading = ref(false)
-const uploadProgress = ref(0)
-const progressLabel = ref('')
 const directoryItems = ref<string[]>([])
 const folderInputRef = ref<HTMLInputElement | null>(null)
-const lastResult = ref<{
-  url: string
-  fileName: string
-  size: number
-  id: string
-} | null>(null)
+const picked = ref<File[] | null>(null)
+const items = ref<UploadQueueItem[]>([])
 
 const maxMb = computed(() => Number(config.public.maxUploadMb) || 20)
+
+function canPreview(file: File) {
+  return file.type.startsWith('image/') && !isHeicLikeFile(file)
+}
+
+function revokePreview(item: UploadQueueItem) {
+  if (item.previewUrl) {
+    URL.revokeObjectURL(item.previewUrl)
+    item.previewUrl = null
+  }
+}
+
+function revokeAll() {
+  for (const item of items.value) revokePreview(item)
+}
+
+function createItem(file: File): UploadQueueItem {
+  return {
+    id: crypto.randomUUID(),
+    fileName: file.name,
+    previewUrl: canPreview(file) ? URL.createObjectURL(file) : null,
+    progress: 0,
+    status: 'queued'
+  }
+}
 
 async function loadDirectories() {
   try {
@@ -49,35 +69,40 @@ onMounted(() => {
   }
 })
 
-async function uploadOne(file: File) {
+onUnmounted(revokeAll)
+
+async function uploadOne(item: UploadQueueItem, file: File) {
   if (file.size > maxMb.value * 1024 * 1024) {
     throw new Error(`「${file.name}」超过 ${maxMb.value}MB 限制`)
   }
 
-  uploadProgress.value = 0
-  progressLabel.value = isHeicLikeFile(file)
-    ? `转换 HEIC：${file.name}`
-    : file.name
-
-  const prepared = isHeicLikeFile(file)
-    ? await (await import('~/utils/prepareUploadFile.client')).prepareUploadFile(file)
-    : file
-  if (prepared.size > maxMb.value * 1024 * 1024) {
-    throw new Error(`「${file.name}」转换后超过 ${maxMb.value}MB 限制`)
+  let prepared = file
+  if (isHeicLikeFile(file)) {
+    item.status = 'converting'
+    item.progress = 0
+    prepared = await (await import('~/utils/prepareUploadFile.client')).prepareUploadFile(file)
+    if (prepared.size > maxMb.value * 1024 * 1024) {
+      throw new Error(`「${file.name}」转换后超过 ${maxMb.value}MB 限制`)
+    }
+    revokePreview(item)
+    item.fileName = prepared.name !== file.name ? `${file.name} → ${prepared.name}` : prepared.name
+    item.previewUrl = URL.createObjectURL(prepared)
   }
 
-  progressLabel.value = prepared.name !== file.name
-    ? `${file.name} → ${prepared.name}`
-    : prepared.name
+  item.status = 'uploading'
+  item.progress = 0
 
   const targetDir = resolveUploadDirectory(prepared, directory.value)
   const result = await uploadFileWithProgress(prepared, {
     directory: targetDir,
-    onProgress: (p) => {
-      uploadProgress.value = p
+    onProgress: (percent) => {
+      item.progress = percent
     }
   })
-  lastResult.value = {
+
+  item.progress = 100
+  item.status = 'success'
+  item.result = {
     url: result.url,
     fileName: result.fileName,
     size: result.size,
@@ -89,27 +114,38 @@ async function uploadFiles(raw: File[]) {
   const list = raw.filter(f => f.name && !f.name.startsWith('.'))
   if (!list.length) return
 
+  if (uploading.value) {
+    toast.add({
+      title: '请等待当前上传完成',
+      color: 'warning'
+    })
+    return
+  }
+
+  revokeAll()
+  items.value = list.map(createItem)
   uploading.value = true
   let successCount = 0
+
   try {
     for (let i = 0; i < list.length; i++) {
       const file = list[i]!
-      if (list.length > 1) {
-        progressLabel.value = `${file.name}（${i + 1}/${list.length}）`
-      }
+      const item = items.value[i]!
       try {
-        await uploadOne(file)
+        await uploadOne(item, file)
         successCount++
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : '未知错误'
+        item.status = 'error'
+        item.error = message
         toast.add({
           title: `上传失败：${file.name}`,
           description: message,
           color: 'error'
         })
-        break
       }
     }
+
     if (successCount > 0) {
       toast.add({
         title: successCount > 1 ? `已完成 ${successCount} 个文件` : '上传成功',
@@ -122,13 +158,12 @@ async function uploadFiles(raw: File[]) {
     }
   } finally {
     uploading.value = false
-    uploadProgress.value = 0
-    progressLabel.value = ''
+    picked.value = null
   }
 }
 
-function onSelect(file: File | File[] | null | undefined) {
-  const list = Array.isArray(file) ? file : file ? [file] : []
+function onSelect(file: File[] | null | undefined) {
+  const list = file ?? []
   if (!list.length) return
   uploadFiles(list)
 }
@@ -144,7 +179,7 @@ defineExpose({ loadDirectories, uploadFiles })
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="flex min-h-0 flex-col gap-4">
     <UFormField
       v-if="!compact"
       label="目录（可选）"
@@ -161,19 +196,22 @@ defineExpose({ loadDirectories, uploadFiles })
     </UFormField>
 
     <UFileUpload
+      v-model="picked"
       multiple
       accept="image/*,.heic,.heif,video/*,audio/*,.pdf,.zip"
-      :label="compact ? '拖拽或点击上传' : '拖拽、点击或粘贴上传'"
+      :label="uploading ? '正在上传…' : compact ? '拖拽或点击上传' : '拖拽、点击或粘贴上传'"
       :description="compact ? undefined : '支持多文件；HEIC 会自动转为 WebP/JPEG 以便预览'"
       :disabled="uploading"
-      class="w-full"
-      :ui="{ base: 'min-h-32 sm:min-h-40' }"
+      :preview="false"
+      icon="i-lucide-image-plus"
+      class="w-full shrink-0"
+      :ui="{ base: items.length ? 'min-h-20 sm:min-h-24' : 'min-h-28 sm:min-h-40' }"
       @update:model-value="onSelect"
     />
 
     <div
       v-if="!compact"
-      class="flex flex-wrap gap-2"
+      class="flex shrink-0 flex-wrap gap-2"
     >
       <UButton
         icon="i-lucide-folder-up"
@@ -193,37 +231,10 @@ defineExpose({ loadDirectories, uploadFiles })
       >
     </div>
 
-    <div
-      v-if="uploading"
-      class="space-y-2"
-    >
-      <p class="text-sm text-muted truncate">
-        {{ progressLabel || '上传中…' }}
-      </p>
-      <UProgress
-        :model-value="uploadProgress"
-        :max="100"
-      />
-    </div>
-
-    <div
-      v-if="showResult && lastResult"
-      class="ui-frame space-y-2 bg-elevated/60 p-3"
-    >
-      <div class="flex min-w-0 items-start justify-between gap-2">
-        <span class="text-sm font-medium min-w-0 truncate">{{ lastResult.fileName }}</span>
-        <CopyLinkMenu
-          :url="lastResult.url"
-          :file-name="lastResult.fileName"
-          size="sm"
-          class="shrink-0"
-        />
-      </div>
-      <a
-        :href="lastResult.url"
-        target="_blank"
-        class="block text-xs text-primary break-all underline"
-      >{{ lastResult.url }}</a>
-    </div>
+    <FileUploadQueue
+      :items="items"
+      :show-result="showResult"
+      class="min-h-0"
+    />
   </div>
 </template>

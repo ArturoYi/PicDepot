@@ -95,8 +95,6 @@ export function usePageBackground() {
     }
 
     loading.value = true
-    // 切换时先回退到纯色占位，加载完成后再展示
-    readySrc.value = null
     try {
       await preloadImage(src)
       if (currentSrc.value === src) {

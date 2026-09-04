@@ -29,14 +29,33 @@ function onPaste(event: ClipboardEvent) {
 </script>
 
 <template>
-  <div class="flex min-h-full items-start justify-center py-4 sm:items-center sm:py-6">
+  <div class="flex w-full min-h-full items-center justify-center py-4 sm:py-6">
     <UCard
       class="w-full min-w-0 max-w-xl"
       :ui="{
         root: 'bg-default/80 backdrop-blur-md shadow-lg',
-        body: 'p-4 sm:p-6'
+        header: 'p-3 sm:p-4',
+        body: 'p-3 sm:p-6'
       }"
     >
+      <template #header>
+        <div class="flex items-center gap-2.5">
+          <div class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <UIcon
+              name="i-lucide-cloud-upload"
+              class="size-5"
+            />
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-highlighted">
+              上传文件
+            </p>
+            <p class="text-xs text-muted">
+              支持多图；手机可左右滑动查看进度
+            </p>
+          </div>
+        </div>
+      </template>
       <FileUploadPanel
         ref="uploadPanelRef"
         compact
