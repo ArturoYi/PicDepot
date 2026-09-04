@@ -145,7 +145,7 @@ watch(() => route.fullPath, () => {
 </script>
 
 <template>
-  <div class="relative flex h-dvh flex-col overflow-hidden pb-[env(safe-area-inset-bottom)]">
+  <div class="app-shell flex flex-col pb-[env(safe-area-inset-bottom)]">
     <AppPageBackground v-if="isUploadPage" />
 
     <UHeader

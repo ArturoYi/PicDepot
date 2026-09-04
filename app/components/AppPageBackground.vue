@@ -77,7 +77,7 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-zinc-100 transition-colors duration-300 dark:bg-zinc-900"
+    class="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-zinc-100 transition-colors duration-300 dark:bg-zinc-900"
     aria-hidden="true"
   >
     <div

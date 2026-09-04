@@ -374,6 +374,7 @@ onUnmounted(() => {
     <div class="ui-frame min-h-0 flex-1">
       <div
         ref="viewportRef"
+        data-allow-pinch
         class="ui-frame-clip relative touch-none select-none overscroll-none bg-elevated/40 [-webkit-touch-callout:none]"
         :class="interacting && scale > 1 ? 'cursor-grabbing' : scale > 1 ? 'cursor-grab' : 'cursor-zoom-in'"
         style="height: min(70dvh, 900px, calc(100dvh - 14rem))"

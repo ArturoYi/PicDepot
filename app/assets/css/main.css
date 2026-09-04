@@ -22,17 +22,27 @@
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   /*
     禁止移动端浏览器把双指捏合/双击当成「整页缩放」。
-    touch-action 会与祖先取交集，所以写在 html/body 即可约束整站；
     预览框内再用 touch-action: none 自行处理图片缩放。
+    html/body 锁死滚动，避免橡皮筋把整页顶偏（底栏错位、刷新才恢复）。
   */
   html,
   body,
   #__nuxt {
     touch-action: pan-x pan-y;
+  }
+
+  body,
+  #__nuxt {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   /*
@@ -66,6 +76,16 @@
     --tw-inset-ring-shadow: 0 0 #0000;
     overflow: visible;
   }
+}
+
+.app-shell {
+  position: fixed;
+  top: var(--app-top, 0px);
+  left: var(--app-left, 0px);
+  width: var(--app-width, 100%);
+  height: var(--app-height, 100dvh);
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 @media (max-width: 640px), (pointer: coarse) {
