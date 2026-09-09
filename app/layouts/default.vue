@@ -63,6 +63,38 @@ function closeMenu() {
   menuOpen.value = false
 }
 
+function selectEventClick(event: Event): MouseEvent | undefined {
+  if (event instanceof MouseEvent) return event
+  const detail = 'detail' in event ? event.detail : null
+  if (detail && typeof detail === 'object' && 'originalEvent' in detail) {
+    const original = (detail as { originalEvent?: Event }).originalEvent
+    if (original instanceof MouseEvent) return original
+  }
+  return undefined
+}
+
+function isModifiedClick(event: Event) {
+  const click = selectEventClick(event)
+  if (!click) return false
+  return click.metaKey || click.ctrlKey || click.shiftKey || click.altKey || click.button !== 0
+}
+
+/**
+ * 移动端菜单点选后会立刻卸载 Modal 里的链接，原生跳转经常被取消。
+ * 改为拦截点击、编程导航，再关菜单。
+ */
+function goTo(to: string) {
+  return (event: Event) => {
+    if (isModifiedClick(event)) return
+    event.preventDefault()
+    selectEventClick(event)?.preventDefault()
+    if (route.path !== to) {
+      void navigateTo(to)
+    }
+    closeMenu()
+  }
+}
+
 /** 主导航（桌面顶栏 + 移动端菜单共用） */
 const primaryItems = computed<NavigationMenuItem[]>(() => {
   const items: NavigationMenuItem[] = []
@@ -74,14 +106,14 @@ const primaryItems = computed<NavigationMenuItem[]>(() => {
         icon: item.icon,
         to: item.to,
         active: route.path.startsWith(item.to),
-        onSelect: closeMenu
+        onSelect: goTo(item.to)
       })
     }
     items.push({
       label: '返回上传',
       icon: 'i-lucide-upload',
       to: '/',
-      onSelect: closeMenu
+      onSelect: goTo('/')
     })
   } else if (isUploadPage.value) {
     if (loaded.value && isAdmin.value) {
@@ -89,7 +121,7 @@ const primaryItems = computed<NavigationMenuItem[]>(() => {
         label: '后台管理',
         icon: 'i-lucide-settings',
         to: '/admin/files',
-        onSelect: closeMenu
+        onSelect: goTo('/admin/files')
       })
     }
   } else if (loaded.value && isAdmin.value) {
@@ -97,7 +129,7 @@ const primaryItems = computed<NavigationMenuItem[]>(() => {
       label: '后台管理',
       icon: 'i-lucide-settings',
       to: '/admin/files',
-      onSelect: closeMenu
+      onSelect: goTo('/admin/files')
     })
   }
 
@@ -141,6 +173,13 @@ const mobileMenuItems = computed<NavigationMenuItem[][]>(() => {
 
 watch(() => route.fullPath, () => {
   menuOpen.value = false
+})
+
+watch(menuOpen, (open) => {
+  if (!open || !loaded.value || !isAdmin.value) return
+  for (const item of adminNavItems) {
+    void preloadRouteComponents(item.to)
+  }
 })
 </script>
 

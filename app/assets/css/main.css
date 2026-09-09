@@ -38,6 +38,15 @@
     touch-action: pan-x pan-y;
   }
 
+  a,
+  button,
+  [role="button"],
+  [role="link"],
+  [role="menuitem"],
+  [role="menuitemradio"] {
+    touch-action: manipulation;
+  }
+
   body,
   #__nuxt {
     height: 100%;
@@ -86,6 +95,14 @@
   height: var(--app-height, 100dvh);
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+/* 对齐 visualViewport 锁定后的应用框，避免进度条画在不可见区域 */
+.nuxt-loading-indicator {
+  top: var(--app-top, 0px) !important;
+  left: var(--app-left, 0px) !important;
+  right: auto !important;
+  width: var(--app-width, 100%) !important;
 }
 
 @media (max-width: 640px), (pointer: coarse) {
