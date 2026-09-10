@@ -19,7 +19,7 @@ export function buildFileListWhere(filters: FileListFilters): { clause: string, 
   const binds: unknown[] = []
 
   if (filters.dir === '__root__') {
-    parts.push("(directory = '' OR directory IS NULL)")
+    parts.push('(directory = \'\' OR directory IS NULL)')
   } else if (filters.dir !== undefined && filters.dir !== '') {
     parts.push('directory = ?')
     binds.push(filters.dir)

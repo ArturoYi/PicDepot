@@ -2,7 +2,7 @@
 @import "@nuxt/ui";
 
 @theme static {
-  --font-sans: 'Public Sans', sans-serif;
+  --font-sans: 'Public Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   --color-green-50: #EFFDF5;
   --color-green-100: #D9FBE8;
@@ -52,16 +52,13 @@
     height: 100%;
     overflow: hidden;
     overscroll-behavior: none;
+    font-family: var(--font-sans);
   }
 
   /*
     描边策略（彻底避免移动端「边框消失」）：
-
-    1. Nuxt UI 默认用 inset ring（box-shadow）当边框。
-       祖先只要有 overflow:hidden + border-radius，WebKit 就会把这条 shadow 裁掉。
-    2. 同一元素上 overflow:hidden + radius + 1px border，iOS 也会把真 border 抗锯齿掉。
-    3. 因此：表单控件一律真实 border，并清掉 inset ring；卡片禁止 overflow:hidden。
-    4. 需要裁切内容时，边框放外层、overflow 放内层（见 .ui-frame / .ui-frame-clip）。
+    1. 表单控件真实 border，清掉 inset ring；
+    2. 需要裁切内容时，边框放外层、overflow 放内层（见 .ui-frame / .ui-frame-clip）。
   */
   :where(input, textarea, select)[data-slot="base"],
   :where(button[data-slot="base"][role="combobox"]) {
@@ -72,8 +69,8 @@
     --tw-ring-shadow: 0 0 #0000;
   }
 
-  /* UCard：divide-y + rounded-lg。禁止 overflow 裁自己的边框 */
-  :where([data-slot="root"].divide-y.rounded-lg) {
+  /* UCard：divide-y + rounded-2xl。禁止 overflow 裁自己的边框 */
+  :where([data-slot="root"].divide-y) {
     overflow: visible;
   }
 
@@ -103,6 +100,8 @@
   left: var(--app-left, 0px) !important;
   right: auto !important;
   width: var(--app-width, 100%) !important;
+  background: linear-gradient(90deg, #00DC82, #36E4DA) !important;
+  box-shadow: 0 0 10px rgba(0, 220, 130, 0.5) !important;
 }
 
 @media (max-width: 640px), (pointer: coarse) {
@@ -116,10 +115,6 @@
     --ui-border-accented: var(--color-zinc-500);
   }
 
-  /*
-    iOS 对 <16px 的 input 会聚焦缩放，缩放后再叠加亚像素取整，1px 边框更容易没。
-    同时抬高触控高度。
-  */
   :where(input, textarea, select)[data-slot="base"],
   :where(button[data-slot="base"][role="combobox"]) {
     font-size: 1rem;
@@ -132,11 +127,108 @@
   border-width: 1px;
   border-style: solid;
   border-color: var(--ui-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
 }
 
 @utility ui-frame-clip {
   overflow: hidden;
   border-radius: inherit;
   min-height: 0;
+}
+
+/* 现代化毛玻璃卡片 */
+@utility glass-card {
+  background-color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.03);
+}
+
+:is(.dark .glass-card) {
+  background-color: rgba(18, 18, 23, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* 现代化毛玻璃顶栏 */
+@utility glass-header {
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+}
+
+:is(.dark .glass-header) {
+  background-color: rgba(13, 17, 23, 0.8);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Nuxt 绿色光晕效果 */
+@utility nuxt-glow {
+  box-shadow: 0 0 30px -5px rgba(0, 220, 130, 0.25);
+}
+
+:is(.dark .nuxt-glow) {
+  box-shadow: 0 0 40px -5px rgba(0, 220, 130, 0.35);
+}
+
+/* 微妙的网格点阵背景 */
+.dot-grid-pattern {
+  background-image: radial-gradient(rgba(0, 220, 130, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+:is(.dark .dot-grid-pattern) {
+  background-image: radial-gradient(rgba(0, 220, 130, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* 发光呼吸指示器 */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 220, 130, 0.7);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+    box-shadow: 0 0 0 6px rgba(0, 220, 130, 0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 自定义纤细精致滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+:is(.dark ::-webkit-scrollbar-thumb) {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+:is(.dark ::-webkit-scrollbar-thumb:hover) {
+  background: rgba(255, 255, 255, 0.25);
 }

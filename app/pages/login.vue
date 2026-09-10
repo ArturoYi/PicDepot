@@ -3,6 +3,7 @@ definePageMeta({ middleware: 'guest' })
 
 const toast = useToast()
 const route = useRoute()
+const config = useRuntimeConfig()
 const { user, loaded, needsBootstrap } = useAuthSession()
 const username = ref('')
 const password = ref('')
@@ -80,69 +81,99 @@ async function submit() {
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 items-start justify-center py-6 sm:items-center">
-    <UCard class="w-full min-w-0 max-w-md">
-      <template #header>
-        <div class="space-y-1">
-          <h1 class="text-xl font-semibold">
-            {{ mode === 'login' ? '登录' : '首次初始化顶级管理员' }}
-          </h1>
-          <p class="text-sm text-muted">
-            {{ mode === 'login' ? '登录后可上传；管理员可进入后台管理' : '仅首次可用，将创建 isAdmin 顶级管理员' }}
-          </p>
-        </div>
-      </template>
+  <div class="flex h-full min-h-0 items-center justify-center p-4 sm:p-6">
+    <div class="relative w-full max-w-md">
+      <!-- 背后光晕 -->
+      <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-emerald-500/20 via-teal-500/15 to-emerald-500/20 blur-xl opacity-70" />
 
-      <form
-        class="space-y-4"
-        @submit.prevent="submit"
+      <UCard
+        class="relative w-full min-w-0 glass-card rounded-2xl border border-white/40 dark:border-white/10 shadow-2xl"
+        :ui="{
+          header: 'p-5 sm:p-6 pb-2 border-b border-default/30',
+          body: 'p-5 sm:p-6 space-y-4',
+          footer: 'p-4 border-t border-default/30 text-center'
+        }"
       >
-        <UFormField
-          label="用户名"
-          required
-        >
-          <UInput
-            v-model="username"
-            name="username"
-            autocomplete="username"
-            icon="i-lucide-user"
-            class="w-full"
-          />
-        </UFormField>
-        <UFormField
-          label="密码"
-          required
-        >
-          <UInput
-            v-model="password"
-            name="password"
-            type="password"
-            autocomplete="current-password"
-            icon="i-lucide-lock"
-            class="w-full"
-          />
-        </UFormField>
+        <template #header>
+          <div class="flex flex-col items-center text-center space-y-3">
+            <div class="relative flex size-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-green-500 to-teal-400 text-white shadow-md shadow-emerald-500/25 ring-1 ring-white/20">
+              <UIcon
+                name="i-lucide-image"
+                class="size-6"
+              />
+              <span class="absolute -top-1 -right-1 size-3 rounded-full bg-emerald-400 ring-2 ring-default animate-pulse-glow" />
+            </div>
+            <div>
+              <h1 class="text-xl font-bold tracking-tight text-highlighted">
+                {{ mode === 'login' ? `登录 ${config.public.siteName}` : '首次初始化管理员' }}
+              </h1>
+              <p class="mt-1 text-xs text-muted">
+                {{ mode === 'login' ? '登录后可上传；管理员可进入后台管理' : '仅首次可用，将创建顶级管理员' }}
+              </p>
+            </div>
+          </div>
+        </template>
 
-        <UButton
-          type="submit"
-          block
-          :loading="loading"
-          :label="mode === 'login' ? '登录' : '创建顶级管理员'"
-        />
-      </form>
+        <form
+          class="space-y-4 pt-1"
+          @submit.prevent="submit"
+        >
+          <UFormField
+            label="用户名"
+            required
+          >
+            <UInput
+              v-model="username"
+              name="username"
+              autocomplete="username"
+              icon="i-lucide-user"
+              placeholder="请输入用户名"
+              class="w-full rounded-xl"
+            />
+          </UFormField>
 
-      <template
-        v-if="bootstrapAvailable"
-        #footer
-      >
-        <UButton
-          variant="link"
-          color="neutral"
-          size="sm"
-          :label="mode === 'login' ? '首次使用？初始化顶级管理员' : '已有账号？去登录'"
-          @click="mode = mode === 'login' ? 'bootstrap' : 'login'"
-        />
-      </template>
-    </UCard>
+          <UFormField
+            label="密码"
+            required
+          >
+            <UInput
+              v-model="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              icon="i-lucide-lock"
+              placeholder="请输入访问密码"
+              class="w-full rounded-xl"
+            />
+          </UFormField>
+
+          <div class="pt-2">
+            <UButton
+              type="submit"
+              block
+              color="primary"
+              variant="solid"
+              size="md"
+              :loading="loading"
+              :label="mode === 'login' ? '立即登录' : '创建管理员并初始化'"
+              class="rounded-xl font-semibold shadow-xs"
+            />
+          </div>
+        </form>
+
+        <template
+          v-if="bootstrapAvailable"
+          #footer
+        >
+          <UButton
+            variant="link"
+            color="neutral"
+            size="sm"
+            :label="mode === 'login' ? '首次使用系统？初始化管理员账号' : '已有账号？返回登录'"
+            @click="mode = mode === 'login' ? 'bootstrap' : 'login'"
+          />
+        </template>
+      </UCard>
+    </div>
   </div>
 </template>

@@ -77,12 +77,18 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-zinc-100 transition-colors duration-300 dark:bg-zinc-900"
+    class="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-zinc-50 transition-colors duration-500 dark:bg-zinc-950"
     aria-hidden="true"
   >
+    <!-- 环境微光光斑（Nuxt 绿 + 青色氛围） -->
+    <div class="absolute -top-[20%] -left-[10%] h-[60vh] w-[60vw] rounded-full bg-emerald-400/15 blur-[120px] dark:bg-emerald-500/20" />
+    <div class="absolute top-[40%] -right-[15%] h-[55vh] w-[55vw] rounded-full bg-teal-400/15 blur-[130px] dark:bg-teal-500/15" />
+    <div class="absolute -bottom-[20%] left-[20%] h-[50vh] w-[50vw] rounded-full bg-emerald-500/10 blur-[140px] dark:bg-emerald-600/15" />
+
+    <!-- 壁纸层（带淡入淡出与轻微缩放动效） -->
     <div
       class="absolute inset-0 origin-center transition-transform duration-700 ease-out"
-      :class="pulse ? 'scale-[1.06]' : 'scale-100'"
+      :class="pulse ? 'scale-[1.05]' : 'scale-100'"
     >
       <div
         class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700 ease-out"
@@ -95,11 +101,17 @@ onUnmounted(() => {
         :style="backSrc ? { backgroundImage: `url('${backSrc}')` } : undefined"
       />
     </div>
-    <!-- 手机上遮罩更淡，背景切换才看得出 -->
+
+    <!-- 点阵纹理增强科技质感 -->
+    <div class="dot-grid-pattern absolute inset-0 opacity-40 mix-blend-overlay dark:opacity-30" />
+
+    <!-- 切换背景瞬间的微闪高光 -->
     <div
-      class="absolute inset-0 bg-white/40 transition-opacity duration-300 dark:bg-white/20"
+      class="absolute inset-0 bg-white/30 transition-opacity duration-300 dark:bg-white/15"
       :class="flash ? 'opacity-100' : 'opacity-0'"
     />
-    <div class="absolute inset-0 bg-default/15 dark:bg-default/25 sm:bg-default/35 sm:dark:bg-default/45" />
+
+    <!-- 毛玻璃遮罩渐变层 -->
+    <div class="absolute inset-0 bg-gradient-to-b from-white/30 via-white/10 to-white/40 dark:from-black/30 dark:via-black/15 dark:to-black/45" />
   </div>
 </template>

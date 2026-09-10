@@ -65,7 +65,7 @@ const usageColor = computed(() => {
   if (percent == null) return 'primary'
   if (percent >= 90) return 'error'
   if (percent >= 70) return 'warning'
-  return 'success'
+  return 'primary'
 })
 
 const usageBarValue = computed(() => {
@@ -75,19 +75,19 @@ const usageBarValue = computed(() => {
 })
 
 const typeRows = computed(() => [
-  { key: 'image', label: '图片', icon: 'i-lucide-image', ...stats.value.types.image },
-  { key: 'video', label: '视频', icon: 'i-lucide-video', ...stats.value.types.video },
-  { key: 'audio', label: '音频', icon: 'i-lucide-audio-lines', ...stats.value.types.audio },
-  { key: 'other', label: '其他', icon: 'i-lucide-file', ...stats.value.types.other }
+  { key: 'image', label: '图片', icon: 'i-lucide-image', color: 'emerald', barColor: 'bg-emerald-500', ...stats.value.types.image },
+  { key: 'video', label: '视频', icon: 'i-lucide-video', color: 'purple', barColor: 'bg-purple-500', ...stats.value.types.video },
+  { key: 'audio', label: '音频', icon: 'i-lucide-audio-lines', color: 'amber', barColor: 'bg-amber-500', ...stats.value.types.audio },
+  { key: 'other', label: '其他', icon: 'i-lucide-file', color: 'sky', barColor: 'bg-sky-500', ...stats.value.types.other }
 ].map(row => ({
   ...row,
   share: typeShare(row.bytes)
 })))
 
 const runtimeRows = computed(() => [
-  { label: 'D1 数据库', ok: stats.value.runtime.db },
-  { label: 'R2 存储桶', ok: stats.value.runtime.bucket },
-  { label: '公网直链', ok: stats.value.runtime.r2PublicBaseUrlConfigured }
+  { label: 'Cloudflare D1 数据库', desc: '元数据与用户鉴权', ok: stats.value.runtime.db },
+  { label: 'Cloudflare R2 存储桶', desc: '对象存储与分片', ok: stats.value.runtime.bucket },
+  { label: 'R2 公网 CDN 直链', desc: '外部访问加速', ok: stats.value.runtime.r2PublicBaseUrlConfigured }
 ])
 
 function typeShare(bytes: number) {
@@ -110,290 +110,426 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 flex-col overflow-y-auto overscroll-contain">
-    <div class="grid w-full grid-cols-1 content-start gap-3 lg:grid-cols-3">
+  <div class="flex h-full min-h-0 flex-col overflow-y-auto overscroll-contain pr-1 space-y-4">
+    <!-- 顶部核心 KPI 卡片群 -->
+    <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+      <!-- 存储空间大卡 -->
       <UCard
-        class="lg:col-span-2"
-        :ui="{ body: 'p-4 sm:p-5' }"
+        class="sm:col-span-2 relative overflow-hidden bg-default/80 backdrop-blur-md border border-default/80 shadow-xs"
+        :ui="{ body: 'p-4 sm:p-5 flex flex-col justify-between h-full' }"
       >
         <div class="flex items-start justify-between gap-3">
-          <div>
-            <p class="text-sm text-muted">
-              空间占用
-            </p>
-            <USkeleton
-              v-if="statsLoading"
-              class="mt-2 h-8 w-40"
-            />
-            <p
-              v-else
-              class="mt-2 text-3xl font-semibold tabular-nums"
-            >
-              {{ formatFileBytes(stats.totalBytes) }}
-            </p>
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <div class="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <UIcon
+                  name="i-lucide-hard-drive"
+                  class="size-4"
+                />
+              </div>
+              <span class="text-xs font-semibold text-muted tracking-wide uppercase">存储容量使用</span>
+            </div>
+            <div class="pt-1">
+              <USkeleton
+                v-if="statsLoading"
+                class="h-8 w-40"
+              />
+              <div
+                v-else
+                class="flex items-baseline gap-2"
+              >
+                <span class="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-highlighted">
+                  {{ formatFileBytes(stats.totalBytes) }}
+                </span>
+                <span
+                  v-if="stats.quotaBytes > 0"
+                  class="text-xs text-muted"
+                >
+                  / 配额 {{ formatFileBytes(stats.quotaBytes) }}
+                </span>
+              </div>
+            </div>
           </div>
+
           <UBadge
             v-if="!statsLoading && stats.usagePercent != null"
             :color="usageColor"
             variant="subtle"
             size="lg"
-            class="tabular-nums"
+            class="font-mono font-bold"
           >
             {{ formatPercent(stats.usagePercent) }}
           </UBadge>
         </div>
 
-        <template v-if="statsLoading">
-          <USkeleton class="mt-4 h-2 w-full" />
-          <USkeleton class="mt-3 h-4 w-56" />
-        </template>
-        <template v-else-if="stats.quotaBytes > 0">
-          <UProgress
-            :model-value="usageBarValue"
-            :color="usageColor"
-            size="sm"
-            class="mt-4"
-          />
-          <p class="mt-2 text-xs text-muted">
-            已用 {{ formatFileBytes(stats.totalBytes) }} / 配额 {{ formatFileBytes(stats.quotaBytes) }}
-            · 剩余 {{ formatFileBytes(Math.max(0, stats.quotaBytes - stats.totalBytes)) }}
+        <div class="mt-4">
+          <template v-if="statsLoading">
+            <USkeleton class="h-2 w-full rounded-full" />
+            <USkeleton class="mt-2 h-3.5 w-48" />
+          </template>
+          <template v-else-if="stats.quotaBytes > 0">
+            <div class="h-2 w-full overflow-hidden rounded-full bg-elevated/80 border border-default/40">
+              <div
+                class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
+                :style="{ width: `${usageBarValue}%` }"
+              />
+            </div>
+            <div class="mt-2 flex items-center justify-between text-xs text-muted">
+              <span>已用 {{ formatFileBytes(stats.totalBytes) }}</span>
+              <span>剩余 {{ formatFileBytes(Math.max(0, stats.quotaBytes - stats.totalBytes)) }} 可用</span>
+            </div>
+          </template>
+          <p
+            v-else
+            class="text-xs text-muted"
+          >
+            未设置硬性配额上限，存储空间由 R2 按需自动弹性扩展
           </p>
+        </div>
+      </UCard>
+
+      <!-- 文件总数卡 -->
+      <UCard
+        class="bg-default/80 backdrop-blur-md border border-default/80 shadow-xs"
+        :ui="{ body: 'p-4 sm:p-5 flex flex-col justify-between h-full' }"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="flex size-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+              <UIcon
+                name="i-lucide-files"
+                class="size-4"
+              />
+            </div>
+            <span class="text-xs font-semibold text-muted tracking-wide uppercase">文件总数</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <USkeleton
+            v-if="statsLoading"
+            class="h-8 w-20"
+          />
+          <p
+            v-else
+            class="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-highlighted"
+          >
+            {{ stats.fileCount.toLocaleString() }}
+          </p>
+          <p
+            v-if="!statsLoading"
+            class="mt-1 text-xs text-muted"
+          >
+            平均 {{ formatFileBytes(stats.averageBytes) }} / 份
+          </p>
+        </div>
+      </UCard>
+
+      <!-- 目录统计卡 -->
+      <UCard
+        class="bg-default/80 backdrop-blur-md border border-default/80 shadow-xs"
+        :ui="{ body: 'p-4 sm:p-5 flex flex-col justify-between h-full' }"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="flex size-7 items-center justify-center rounded-lg bg-teal-500/10 text-teal-500">
+              <UIcon
+                name="i-lucide-folder-tree"
+                class="size-4"
+              />
+            </div>
+            <span class="text-xs font-semibold text-muted tracking-wide uppercase">存储目录</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <USkeleton
+            v-if="statsLoading"
+            class="h-8 w-16"
+          />
+          <p
+            v-else
+            class="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-highlighted"
+          >
+            {{ stats.directoryCount }}
+          </p>
+          <p
+            v-if="!statsLoading"
+            class="mt-1 text-xs text-muted"
+          >
+            近 24h 上传 {{ stats.uploadsLast24Hours }} 个
+          </p>
+        </div>
+      </UCard>
+    </div>
+
+    <!-- 活跃度与趋势指标条 -->
+    <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+      <div class="flex items-center gap-3.5 rounded-xl border border-default/70 bg-default/70 p-3.5 backdrop-blur-md shadow-2xs">
+        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
+          <UIcon
+            name="i-lucide-clock"
+            class="size-5"
+          />
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs text-muted">
+            近 24 小时上传
+          </p>
+          <div class="flex items-baseline gap-1.5 mt-0.5">
+            <span class="font-mono text-lg font-bold text-highlighted">{{ statsLoading ? '—' : stats.uploadsLast24Hours }}</span>
+            <span class="text-[11px] text-muted">个文件</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3.5 rounded-xl border border-default/70 bg-default/70 p-3.5 backdrop-blur-md shadow-2xs">
+        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-teal-500/10 text-teal-500">
+          <UIcon
+            name="i-lucide-calendar"
+            class="size-5"
+          />
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs text-muted">
+            近 7 日上传量
+          </p>
+          <div class="flex items-baseline gap-1.5 mt-0.5">
+            <span class="font-mono text-lg font-bold text-highlighted">{{ statsLoading ? '—' : stats.uploadsLast7Days }}</span>
+            <span class="text-[11px] text-muted">个 ({{ formatFileBytes(stats.bytesLast7Days) }})</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3.5 rounded-xl border border-default/70 bg-default/70 p-3.5 backdrop-blur-md shadow-2xs">
+        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-500">
+          <UIcon
+            name="i-lucide-calendar-days"
+            class="size-5"
+          />
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs text-muted">
+            近 30 日上传总量
+          </p>
+          <div class="flex items-baseline gap-1.5 mt-0.5">
+            <span class="font-mono text-lg font-bold text-highlighted">{{ statsLoading ? '—' : stats.uploadsLast30Days }}</span>
+            <span class="text-[11px] text-muted">个文件</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 详细分析与运行环境 -->
+    <div class="grid grid-cols-1 gap-3.5 lg:grid-cols-3">
+      <!-- 类型分布 -->
+      <UCard
+        class="bg-default/80 backdrop-blur-md border border-default/80 shadow-xs"
+        :ui="{ header: 'p-4 border-b border-default/40', body: 'p-4 sm:p-5' }"
+      >
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon
+              name="i-lucide-pie-chart"
+              class="size-4 text-primary"
+            />
+            <h3 class="text-sm font-bold text-highlighted">
+              文件类型分布
+            </h3>
+          </div>
         </template>
-        <p
-          v-else
-          class="mt-3 text-xs text-muted"
-        >
-          未配置存储配额。可在 wrangler 设置 STORAGE_QUOTA_BYTES 后显示使用百分比。
-        </p>
-      </UCard>
 
-      <UCard :ui="{ body: 'p-4 sm:p-5' }">
-        <p class="text-sm text-muted">
-          文件总数
-        </p>
-        <USkeleton
-          v-if="statsLoading"
-          class="mt-2 h-8 w-16"
-        />
-        <p
-          v-else
-          class="mt-2 text-3xl font-semibold tabular-nums"
-        >
-          {{ stats.fileCount }}
-        </p>
-        <p
-          v-if="!statsLoading"
-          class="mt-2 text-xs text-muted"
-        >
-          平均 {{ formatFileBytes(stats.averageBytes) }} · {{ stats.directoryCount }} 个目录
-        </p>
-      </UCard>
-
-      <UCard :ui="{ body: 'p-4 sm:p-5' }">
-        <p class="text-sm text-muted">
-          近 24 小时
-        </p>
-        <USkeleton
-          v-if="statsLoading"
-          class="mt-2 h-8 w-12"
-        />
-        <p
-          v-else
-          class="mt-2 text-3xl font-semibold tabular-nums"
-        >
-          {{ stats.uploadsLast24Hours }}
-        </p>
-        <p class="mt-2 text-xs text-muted">
-          新上传文件
-        </p>
-      </UCard>
-
-      <UCard :ui="{ body: 'p-4 sm:p-5' }">
-        <p class="text-sm text-muted">
-          近 7 日上传
-        </p>
-        <USkeleton
-          v-if="statsLoading"
-          class="mt-2 h-8 w-12"
-        />
-        <p
-          v-else
-          class="mt-2 text-3xl font-semibold tabular-nums"
-        >
-          {{ stats.uploadsLast7Days }}
-        </p>
-        <p
-          v-if="!statsLoading"
-          class="mt-2 text-xs text-muted"
-        >
-          新增占用 {{ formatFileBytes(stats.bytesLast7Days) }}
-        </p>
-      </UCard>
-
-      <UCard :ui="{ body: 'p-4 sm:p-5' }">
-        <p class="text-sm text-muted">
-          近 30 日上传
-        </p>
-        <USkeleton
-          v-if="statsLoading"
-          class="mt-2 h-8 w-12"
-        />
-        <p
-          v-else
-          class="mt-2 text-3xl font-semibold tabular-nums"
-        >
-          {{ stats.uploadsLast30Days }}
-        </p>
-        <p class="mt-2 text-xs text-muted">
-          新上传文件
-        </p>
-      </UCard>
-
-      <UCard :ui="{ body: 'p-4 sm:p-5' }">
-        <p class="text-sm text-muted">
-          类型分布
-        </p>
         <div
           v-if="statsLoading"
-          class="mt-3 space-y-3"
+          class="space-y-4"
         >
           <USkeleton
             v-for="n in 4"
             :key="n"
-            class="h-12 w-full"
+            class="h-12 w-full rounded-lg"
           />
         </div>
         <ul
           v-else
-          class="mt-3 space-y-3"
+          class="space-y-3.5"
         >
           <li
             v-for="row in typeRows"
             :key="row.key"
-            class="space-y-1.5"
+            class="space-y-1.5 rounded-lg p-2 transition-colors hover:bg-elevated/40"
           >
-            <div class="flex items-center gap-2">
-              <UIcon
-                :name="row.icon"
-                class="size-4 shrink-0 text-muted"
-              />
-              <span class="shrink-0 text-sm">{{ row.label }}</span>
-              <UProgress
-                :model-value="row.share"
-                size="xs"
-                class="min-w-0 flex-1"
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <UIcon
+                  :name="row.icon"
+                  class="size-4"
+                  :class="`text-${row.color}-500`"
+                />
+                <span class="font-semibold text-highlighted">{{ row.label }}</span>
+              </div>
+              <span class="font-mono text-muted">{{ row.count }} 个 · {{ row.share }}%</span>
+            </div>
+
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-elevated">
+              <div
+                class="h-full rounded-full transition-all duration-500"
+                :class="row.barColor"
+                :style="{ width: `${row.share}%` }"
               />
             </div>
-            <p class="flex flex-wrap items-center gap-x-0 gap-y-1 pl-6 text-xs text-muted">
-              <span class="tabular-nums">{{ row.count }} 个文件</span>
-              <span class="inline-flex items-center">
-                <span
-                  aria-hidden="true"
-                  class="px-2 text-default/30"
-                >|</span>
-                <span>占用 <span class="tabular-nums">{{ formatFileBytes(row.bytes) }}</span></span>
-              </span>
-              <span class="inline-flex items-center">
-                <span
-                  aria-hidden="true"
-                  class="px-2 text-default/30"
-                >|</span>
-                <span>占比 <span class="tabular-nums">{{ row.share }}%</span></span>
-              </span>
-            </p>
+
+            <div class="flex items-center justify-between text-[11px] text-muted">
+              <span>空间占用</span>
+              <span class="font-mono">{{ formatFileBytes(row.bytes) }}</span>
+            </div>
           </li>
         </ul>
       </UCard>
 
-      <UCard :ui="{ body: 'p-4 sm:p-5' }">
-        <p class="text-sm text-muted">
-          目录占用
-        </p>
+      <!-- 目录排行 -->
+      <UCard
+        class="bg-default/80 backdrop-blur-md border border-default/80 shadow-xs"
+        :ui="{ header: 'p-4 border-b border-default/40', body: 'p-4 sm:p-5' }"
+      >
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon
+              name="i-lucide-folder"
+              class="size-4 text-primary"
+            />
+            <h3 class="text-sm font-bold text-highlighted">
+              目录占用排行
+            </h3>
+          </div>
+        </template>
+
         <div
           v-if="statsLoading"
-          class="mt-3 space-y-3"
+          class="space-y-4"
         >
           <USkeleton
             v-for="n in 4"
             :key="n"
-            class="h-11 w-full"
+            class="h-11 w-full rounded-lg"
           />
         </div>
-        <p
+        <div
           v-else-if="!stats.topDirectories.length"
-          class="mt-3 text-sm text-muted"
+          class="flex h-40 flex-col items-center justify-center gap-2 text-center text-muted"
         >
-          暂无文件
-        </p>
+          <UIcon
+            name="i-lucide-folder-open"
+            class="size-8 opacity-50"
+          />
+          <p class="text-xs">
+            暂无目录数据
+          </p>
+        </div>
         <ul
           v-else
-          class="mt-3 space-y-3"
+          class="space-y-3"
         >
           <li
-            v-for="item in stats.topDirectories"
+            v-for="(item, idx) in stats.topDirectories.slice(0, 5)"
             :key="item.directory || '__root__'"
-            class="space-y-1"
+            class="flex items-center justify-between gap-2 rounded-lg p-2 transition-colors hover:bg-elevated/40 text-xs"
           >
-            <p class="truncate text-sm">
-              {{ item.directory || '根目录' }}
-            </p>
-            <p class="flex flex-wrap items-center gap-x-0 gap-y-1 text-xs text-muted">
-              <span class="tabular-nums">{{ item.count }} 个文件</span>
-              <span class="inline-flex items-center">
-                <span
-                  aria-hidden="true"
-                  class="px-2 text-default/30"
-                >|</span>
-                <span>占用 <span class="tabular-nums">{{ formatFileBytes(item.bytes) }}</span></span>
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span
+                class="flex size-5 shrink-0 items-center justify-center rounded font-mono text-[10px] font-bold"
+                :class="idx === 0 ? 'bg-amber-500/15 text-amber-500' : idx === 1 ? 'bg-zinc-500/15 text-zinc-400' : idx === 2 ? 'bg-orange-500/15 text-orange-500' : 'bg-elevated text-muted'"
+              >
+                {{ idx + 1 }}
               </span>
-              <span class="inline-flex items-center">
-                <span
-                  aria-hidden="true"
-                  class="px-2 text-default/30"
-                >|</span>
-                <span>占比 <span class="tabular-nums">{{ typeShare(item.bytes) }}%</span></span>
-              </span>
-            </p>
+              <div class="min-w-0">
+                <p class="truncate font-semibold text-highlighted">
+                  {{ item.directory || '根目录' }}
+                </p>
+                <p class="text-[11px] text-muted">
+                  {{ item.count }} 个文件
+                </p>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <p class="font-mono font-medium text-highlighted">
+                {{ formatFileBytes(item.bytes) }}
+              </p>
+              <p class="text-[10px] text-muted font-mono">
+                {{ typeShare(item.bytes) }}%
+              </p>
+            </div>
           </li>
         </ul>
       </UCard>
 
-      <UCard :ui="{ body: 'p-4 sm:p-5' }">
-        <p class="text-sm text-muted">
-          运行环境
-        </p>
+      <!-- 运行环境与基础设施 -->
+      <UCard
+        class="bg-default/80 backdrop-blur-md border border-default/80 shadow-xs"
+        :ui="{ header: 'p-4 border-b border-default/40', body: 'p-4 sm:p-5' }"
+      >
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon
+              name="i-lucide-server"
+              class="size-4 text-primary"
+            />
+            <h3 class="text-sm font-bold text-highlighted">
+              运行环境与架构
+            </h3>
+          </div>
+        </template>
+
         <div
           v-if="statsLoading"
-          class="mt-3 space-y-2"
+          class="space-y-3"
         >
           <USkeleton
             v-for="n in 4"
             :key="n"
-            class="h-7 w-full"
+            class="h-10 w-full rounded-lg"
           />
         </div>
-        <ul
+        <div
           v-else
-          class="mt-3 space-y-2.5 text-sm"
+          class="space-y-3.5"
         >
-          <li
+          <div
             v-for="row in runtimeRows"
             :key="row.label"
-            class="flex items-center justify-between gap-2"
+            class="flex items-center justify-between gap-3 rounded-lg border border-default/60 bg-elevated/30 p-2.5"
           >
-            <span>{{ row.label }}</span>
-            <UBadge
-              :color="row.ok ? 'success' : 'error'"
-              variant="subtle"
-              size="sm"
-              :label="row.ok ? '正常' : '未配置'"
-            />
-          </li>
-          <li class="flex items-center justify-between gap-2">
-            <span>单文件上限</span>
-            <span class="tabular-nums text-muted">{{ formatFileBytes(stats.runtime.maxUploadBytes) }}</span>
-          </li>
-        </ul>
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-highlighted">
+                {{ row.label }}
+              </p>
+              <p class="text-[11px] text-muted truncate">
+                {{ row.desc }}
+              </p>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span
+                class="size-2 rounded-full"
+                :class="row.ok ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'"
+              />
+              <UBadge
+                :color="row.ok ? 'primary' : 'error'"
+                variant="subtle"
+                size="xs"
+                :label="row.ok ? '正常运行' : '未就绪'"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between rounded-lg border border-default/60 bg-elevated/30 p-2.5 text-xs">
+            <div class="min-w-0">
+              <p class="font-semibold text-highlighted">
+                单文件体积上限
+              </p>
+              <p class="text-[11px] text-muted">
+                Cloudflare Workers 限制
+              </p>
+            </div>
+            <span class="font-mono font-bold text-primary">{{ formatFileBytes(stats.runtime.maxUploadBytes) }}</span>
+          </div>
+        </div>
       </UCard>
     </div>
   </div>

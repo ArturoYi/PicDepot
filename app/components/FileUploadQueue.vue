@@ -50,16 +50,17 @@ watch(
 <template>
   <div
     v-if="items.length"
-    class="min-w-0"
+    class="min-w-0 pt-1"
   >
     <ClientOnly>
       <template v-if="isMobile">
-        <p
+        <div
           v-if="items.length > 1"
-          class="mb-2 text-center text-xs text-muted"
+          class="mb-2 flex items-center justify-center gap-1.5 text-xs text-muted font-medium"
         >
-          {{ currentIndex + 1 }} / {{ items.length }}
-        </p>
+          <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>文件 {{ currentIndex + 1 }} / {{ items.length }}</span>
+        </div>
 
         <UCarousel
           :key="batchKey"
@@ -83,7 +84,7 @@ watch(
 
       <div
         v-else
-        class="grid max-h-[min(28rem,50dvh)] gap-3 overflow-y-auto overscroll-contain"
+        class="grid max-h-[min(28rem,50dvh)] gap-3.5 overflow-y-auto overscroll-contain p-0.5"
         :class="items.length === 1 ? 'grid-cols-1' : 'grid-cols-2'"
       >
         <FileUploadQueueItemCard
@@ -95,7 +96,7 @@ watch(
       </div>
 
       <template #fallback>
-        <USkeleton class="aspect-square w-full rounded-lg" />
+        <USkeleton class="aspect-square w-full rounded-2xl" />
       </template>
     </ClientOnly>
   </div>

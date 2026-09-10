@@ -14,7 +14,7 @@ const filtersOpen = ref(false)
 
 const dirFilterItems = computed(() =>
   props.directoryStats.map(item => ({
-    label: `${item.directory || '根目录'}（${item.count}）`,
+    label: `${item.directory || '根目录'} (${item.count})`,
     value: item.directory || '__root__'
   }))
 )
@@ -53,10 +53,10 @@ function clearFilters() {
     <div class="flex items-center gap-2 sm:hidden">
       <UInput
         v-model="filterQ"
-        placeholder="搜索文件名"
+        placeholder="搜索文件名..."
         icon="i-lucide-search"
         size="sm"
-        class="min-w-0 flex-1"
+        class="min-w-0 flex-1 rounded-xl"
         @keyup.enter="$emit('apply')"
       />
       <UButton
@@ -66,17 +66,18 @@ function clearFilters() {
         :color="hasActiveFilters ? 'primary' : 'neutral'"
         variant="soft"
         aria-label="筛选"
+        class="rounded-xl shrink-0"
         @click="filtersOpen = true"
       />
     </div>
 
-    <div class="hidden flex-wrap items-center gap-2 sm:flex">
+    <div class="hidden flex-wrap items-center gap-2.5 sm:flex">
       <UInput
         v-model="filterQ"
-        placeholder="搜索文件名"
+        placeholder="搜索文件名..."
         icon="i-lucide-search"
         size="sm"
-        class="min-w-0 w-44"
+        class="min-w-0 w-48 rounded-xl"
         @keyup.enter="$emit('apply')"
       />
       <USelectMenu
@@ -88,7 +89,7 @@ function clearFilters() {
         clear
         size="sm"
         :search-input="dirFilterItems.length > 8 ? { placeholder: '搜索目录' } : false"
-        class="w-52"
+        class="w-52 rounded-xl"
         @update:model-value="onDirChange"
       />
       <USelect
@@ -96,12 +97,16 @@ function clearFilters() {
         :items="typeItems"
         value-key="value"
         size="sm"
-        class="w-32"
+        class="w-32 rounded-xl"
         @update:model-value="onTypeChange"
       />
       <UButton
-        label="筛选"
+        label="搜索"
+        icon="i-lucide-search"
         size="sm"
+        color="primary"
+        variant="soft"
+        class="rounded-xl font-medium"
         :loading="listLoading"
         @click="$emit('apply')"
       />
@@ -109,14 +114,14 @@ function clearFilters() {
 
     <USlideover
       v-model:open="filtersOpen"
-      title="筛选"
-      description="按目录或类型缩小列表"
+      title="筛选过滤"
+      description="按存储目录或文件类型快速缩小文件列表"
       side="bottom"
-      :ui="{ content: 'max-h-[70dvh]' }"
+      :ui="{ content: 'max-h-[70dvh] rounded-t-2xl' }"
     >
       <template #body>
-        <div class="space-y-4">
-          <UFormField label="目录">
+        <div class="space-y-4 py-2">
+          <UFormField label="存储目录">
             <USelectMenu
               :model-value="filterDir || undefined"
               :items="dirFilterItems"
@@ -129,7 +134,7 @@ function clearFilters() {
               @update:model-value="onDirChange"
             />
           </UFormField>
-          <UFormField label="类型">
+          <UFormField label="媒体类型">
             <USelect
               :model-value="filterType || TYPE_ALL"
               :items="typeItems"
@@ -141,17 +146,20 @@ function clearFilters() {
         </div>
       </template>
       <template #footer>
-        <UButton
-          label="重置"
-          color="neutral"
-          variant="ghost"
-          :disabled="!hasActiveFilters"
-          @click="clearFilters"
-        />
-        <UButton
-          label="完成"
-          @click="filtersOpen = false"
-        />
+        <div class="flex w-full justify-between gap-2">
+          <UButton
+            label="重置筛选"
+            color="neutral"
+            variant="ghost"
+            :disabled="!hasActiveFilters"
+            @click="clearFilters"
+          />
+          <UButton
+            label="完成"
+            color="primary"
+            @click="filtersOpen = false"
+          />
+        </div>
       </template>
     </USlideover>
   </div>

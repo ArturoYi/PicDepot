@@ -119,7 +119,7 @@ const primaryItems = computed<NavigationMenuItem[]>(() => {
     if (loaded.value && isAdmin.value) {
       items.push({
         label: '后台管理',
-        icon: 'i-lucide-settings',
+        icon: 'i-lucide-layout-dashboard',
         to: '/admin/files',
         onSelect: goTo('/admin/files')
       })
@@ -127,7 +127,7 @@ const primaryItems = computed<NavigationMenuItem[]>(() => {
   } else if (loaded.value && isAdmin.value) {
     items.push({
       label: '后台管理',
-      icon: 'i-lucide-settings',
+      icon: 'i-lucide-layout-dashboard',
       to: '/admin/files',
       onSelect: goTo('/admin/files')
     })
@@ -189,21 +189,24 @@ watch(menuOpen, (open) => {
 
     <UHeader
       v-model:open="menuOpen"
-      class="shrink-0 pt-[env(safe-area-inset-top)]"
-      :ui="isUploadPage
-        ? { root: 'bg-default/55 backdrop-blur-md border-default/40 max-sm:border-default' }
-        : undefined"
+      class="shrink-0 pt-[env(safe-area-inset-top)] border-b transition-all duration-200"
+      :class="isUploadPage
+        ? 'bg-default/60 backdrop-blur-xl border-default/30 shadow-xs'
+        : 'bg-default/80 backdrop-blur-md border-default/70 shadow-2xs'"
     >
       <template #left>
         <NuxtLink
           to="/"
-          class="flex min-w-0 items-center gap-2 font-semibold text-highlighted"
+          class="group flex min-w-0 items-center gap-2.5 font-semibold text-highlighted"
         >
-          <UIcon
-            name="i-lucide-image"
-            class="size-5 text-primary"
-          />
-          <span class="truncate">{{ config.public.siteName }}</span>
+          <div class="relative flex size-8 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 via-green-500 to-teal-400 text-white shadow-sm shadow-emerald-500/20 ring-1 ring-white/20 transition-transform group-hover:scale-105">
+            <UIcon
+              name="i-lucide-image"
+              class="size-4.5"
+            />
+            <span class="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-emerald-400 ring-2 ring-default animate-pulse" />
+          </div>
+          <span class="truncate text-base font-bold tracking-tight text-highlighted">{{ config.public.siteName }}</span>
         </NuxtLink>
       </template>
 
@@ -216,12 +219,23 @@ watch(menuOpen, (open) => {
       />
 
       <template #right>
-        <span
+        <div
           v-if="loaded && user"
-          class="hidden sm:inline text-xs text-muted truncate max-w-[10rem]"
+          class="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-elevated/70 px-2.5 py-1 text-xs border border-default/60"
         >
-          {{ user.username }}
-        </span>
+          <span class="size-2 rounded-full bg-emerald-500 animate-pulse-glow" />
+          <span class="max-w-[8rem] truncate font-medium text-highlighted">{{ user.username }}</span>
+          <UBadge
+            v-if="isAdmin"
+            size="xs"
+            color="primary"
+            variant="soft"
+            class="text-[10px] px-1 py-0"
+          >
+            Admin
+          </UBadge>
+        </div>
+
         <UButton
           v-if="isUploadPage"
           color="neutral"
@@ -231,10 +245,12 @@ watch(menuOpen, (open) => {
           :loading="backgroundLoading"
           :aria-label="backgroundLabel"
           :title="backgroundLabel"
+          class="rounded-lg bg-default/70 backdrop-blur-md border border-default/40 hover:bg-default/90 text-xs shadow-xs"
           @click="onCycleBackground"
         />
+
         <UButton
-          class="hidden lg:inline-flex"
+          class="hidden lg:inline-flex rounded-lg"
           color="neutral"
           variant="ghost"
           square
@@ -242,26 +258,39 @@ watch(menuOpen, (open) => {
           :aria-label="displayDark ? '浅色模式' : '深色模式'"
           @click="toggleColorMode"
         />
+
         <UButton
           v-if="loaded && user"
-          class="hidden lg:inline-flex"
+          class="hidden lg:inline-flex rounded-lg text-muted hover:text-error hover:bg-error/10"
           color="neutral"
           variant="ghost"
           square
           icon="i-lucide-log-out"
           aria-label="退出登录"
+          title="退出登录"
           @click="handleLogout"
         />
       </template>
 
       <template #body>
-        <div class="space-y-4">
-          <p
+        <div class="space-y-4 py-1">
+          <div
             v-if="loaded && user"
-            class="px-2.5 text-sm text-muted sm:hidden"
+            class="flex items-center justify-between rounded-xl bg-elevated/60 p-3 border border-default/70 sm:hidden"
           >
-            {{ user.username }}
-          </p>
+            <div class="flex items-center gap-2">
+              <span class="size-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span class="font-semibold text-sm">{{ user.username }}</span>
+            </div>
+            <UBadge
+              v-if="isAdmin"
+              size="xs"
+              color="primary"
+              variant="subtle"
+            >
+              管理员
+            </UBadge>
+          </div>
           <UNavigationMenu
             :key="`mobile-${isAdminRoute ? 'admin' : 'upload'}-${loaded}-${isAdmin}`"
             :items="mobileMenuItems"

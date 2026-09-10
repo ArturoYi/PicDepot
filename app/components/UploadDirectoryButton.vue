@@ -67,7 +67,8 @@ onMounted(loadDirectories)
 <template>
   <UModal
     v-model:open="open"
-    title="上传目录"
+    title="上传目标目录"
+    description="选择或输入存储目录，未填写将按媒体类型自动归类"
   >
     <UButton
       icon="i-lucide-folder"
@@ -75,50 +76,63 @@ onMounted(loadDirectories)
       color="neutral"
       variant="soft"
       size="sm"
+      class="rounded-xl border border-default/80 bg-default/80 backdrop-blur-md shadow-2xs hover:border-primary/40 transition-all"
       :title="`上传目录：${directoryLabel}`"
       :aria-label="`上传目录：${directoryLabel}`"
     >
-      <span class="max-w-[7.5rem] truncate sm:max-w-[10rem]">{{ directoryLabel }}</span>
+      <span class="max-w-[7.5rem] truncate text-xs font-medium sm:max-w-[10rem]">{{ directoryLabel }}</span>
     </UButton>
 
     <template #body>
-      <div class="space-y-3">
-        <p class="text-xs text-muted">
-          留空则图片入 image、视频入 video；填写后所有文件使用该目录。选择会保存在本机。
-        </p>
-        <UInputMenu
-          :model-value="directory"
-          mode="autocomplete"
-          :items="directoryItems"
-          placeholder="输入或选择目录"
-          icon="i-lucide-folder"
-          create-item
-          clear
-          class="w-full"
-          @update:model-value="onDirectoryChange"
-          @create="onCreateDirectory"
-        />
-        <div class="flex flex-wrap gap-1.5">
-          <UButton
-            v-for="chip in chips"
-            :key="chip.value || '__auto__'"
-            size="xs"
-            :color="directory === chip.value ? 'primary' : 'neutral'"
-            :variant="directory === chip.value ? 'soft' : 'outline'"
-            :label="chip.label"
-            class="max-w-full"
-            @click="pick(chip.value)"
+      <div class="space-y-4">
+        <UFormField label="指定目录名称">
+          <UInputMenu
+            :model-value="directory"
+            mode="autocomplete"
+            :items="directoryItems"
+            placeholder="输入或选择目录（留空自动归类）"
+            icon="i-lucide-folder"
+            create-item
+            clear
+            class="w-full"
+            @update:model-value="onDirectoryChange"
+            @create="onCreateDirectory"
           />
+        </UFormField>
+
+        <div>
+          <p class="mb-2 text-xs font-medium text-muted">
+            快捷目录标签
+          </p>
+          <div class="flex flex-wrap gap-1.5">
+            <UButton
+              v-for="chip in chips"
+              :key="chip.value || '__auto__'"
+              size="xs"
+              :color="directory === chip.value ? 'primary' : 'neutral'"
+              :variant="directory === chip.value ? 'solid' : 'subtle'"
+              :label="chip.label"
+              class="rounded-lg transition-transform active:scale-95"
+              @click="pick(chip.value)"
+            />
+          </div>
         </div>
       </div>
     </template>
     <template #footer>
-      <UButton
-        label="完成"
-        color="neutral"
-        variant="ghost"
-        @click="confirm"
-      />
+      <div class="flex w-full justify-end gap-2">
+        <UButton
+          label="取消"
+          color="neutral"
+          variant="ghost"
+          @click="open = false"
+        />
+        <UButton
+          label="确认选择"
+          color="primary"
+          @click="confirm"
+        />
+      </div>
     </template>
   </UModal>
 </template>

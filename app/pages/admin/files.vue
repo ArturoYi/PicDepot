@@ -224,8 +224,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 flex-col gap-1.5 sm:gap-2">
-    <div class="flex shrink-0 items-center gap-2">
+  <div class="flex h-full min-h-0 flex-col gap-2">
+    <!-- 顶部筛选与操作工具条 -->
+    <div class="flex shrink-0 items-center justify-between gap-2.5 rounded-xl border border-default/70 bg-default/70 p-1.5 backdrop-blur-md shadow-2xs">
       <AdminFilesFilters
         v-model:filter-q="filterQ"
         v-model:filter-dir="filterDir"
@@ -235,70 +236,86 @@ onMounted(async () => {
         class="min-w-0 flex-1"
         @apply="applyFilters"
       />
-      <UCheckbox
-        v-if="files.length"
-        :model-value="selectAll"
-        aria-label="全选"
-        class="shrink-0"
-        @update:model-value="toggleSelectAll(!!$event)"
-      >
-        <template #label>
-          <span class="hidden sm:inline">全选</span>
-        </template>
-      </UCheckbox>
-      <UButton
-        to="/"
-        icon="i-lucide-upload"
-        aria-label="上传"
-        color="primary"
-        variant="soft"
-        size="sm"
-        class="shrink-0 max-sm:px-2"
-      >
-        <span class="hidden sm:inline">上传</span>
-      </UButton>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <UCheckbox
+          v-if="files.length"
+          :model-value="selectAll"
+          aria-label="全选"
+          class="shrink-0"
+          @update:model-value="toggleSelectAll(!!$event)"
+        >
+          <template #label>
+            <span class="hidden text-xs font-medium sm:inline">全选</span>
+          </template>
+        </UCheckbox>
+
+        <UButton
+          to="/"
+          icon="i-lucide-upload"
+          aria-label="上传文件"
+          color="primary"
+          variant="solid"
+          size="sm"
+          class="shrink-0 rounded-lg shadow-2xs font-medium max-sm:px-2.5"
+        >
+          <span class="hidden sm:inline">上传文件</span>
+        </UButton>
+      </div>
     </div>
 
+    <!-- 核心文件容器 -->
     <div
-      class="ui-frame relative min-h-0 flex-1"
+      class="ui-frame relative min-h-0 flex-1 bg-default/40 backdrop-blur-xs border-default/80"
       :class="{ 'opacity-60 pointer-events-none': listLoading && files.length }"
     >
       <div
-        class="ui-frame-clip absolute inset-0"
-        :class="selectedIds.size ? 'pb-14' : ''"
+        class="ui-frame-clip absolute inset-0 p-1.5"
+        :class="selectedIds.size ? 'pb-16' : ''"
       >
+        <!-- 加载骨架屏 -->
         <div
           v-if="listLoading && !files.length"
-          class="grid size-full grid-cols-2 gap-2.5 p-2 md:grid-cols-3 lg:grid-cols-4"
+          class="grid size-full grid-cols-2 gap-3 p-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
         >
           <USkeleton
-            v-for="n in 8"
+            v-for="n in 10"
             :key="n"
-            class="aspect-square rounded-lg"
+            class="aspect-square rounded-2xl"
           />
         </div>
 
+        <!-- 空状态展示 -->
         <div
           v-else-if="!listLoading && !files.length"
-          class="flex h-full flex-col items-center justify-center gap-3 p-6 text-center"
+          class="flex h-full flex-col items-center justify-center gap-3 p-8 text-center"
         >
-          <UIcon
-            name="i-lucide-images"
-            class="size-10 text-muted"
-          />
-          <p class="text-sm text-muted">
-            暂无上传记录
-          </p>
+          <div class="flex size-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-xs">
+            <UIcon
+              name="i-lucide-image"
+              class="size-8"
+            />
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-base font-semibold text-highlighted">
+              暂无上传文件
+            </h3>
+            <p class="text-xs text-muted max-w-sm">
+              当前目录下暂无任何媒体资源，您可以随时点击下方按钮进行上传
+            </p>
+          </div>
           <UButton
             to="/"
-            icon="i-lucide-upload"
-            label="上传第一个文件"
+            icon="i-lucide-cloud-upload"
+            label="立即上传文件"
             color="primary"
-            variant="soft"
+            variant="solid"
             size="sm"
+            class="rounded-xl shadow-xs"
           />
         </div>
 
+        <!-- 文件瀑布流网格 -->
         <AdminFilesMasonry
           v-else-if="files.length"
           :files="files"
@@ -310,9 +327,10 @@ onMounted(async () => {
         />
       </div>
 
+      <!-- 底部浮动批量操作栏 -->
       <div
         v-if="selectedIds.size"
-        class="absolute inset-x-2 bottom-2 z-20 h-10"
+        class="absolute inset-x-4 bottom-3 z-30 h-11 max-w-lg mx-auto"
       >
         <AdminFilesBatchBar
           class="h-full"
@@ -324,13 +342,16 @@ onMounted(async () => {
       </div>
     </div>
 
+    <!-- 底部统计与分页器 -->
     <div
       v-if="total > 0 || listLoading"
-      class="flex shrink-0 items-center justify-between gap-2"
+      class="flex shrink-0 items-center justify-between gap-3 px-1"
     >
-      <p class="hidden text-xs text-muted sm:block">
-        共 {{ total }} 条 · 每页 {{ limit }} · 第 {{ page }} / {{ totalPages }} 页
-      </p>
+      <div class="hidden items-center gap-1.5 text-xs text-muted sm:flex font-mono">
+        <span>共 {{ total }} 条记录</span>
+        <span>·</span>
+        <span>第 {{ page }} / {{ totalPages }} 页</span>
+      </div>
       <UPagination
         :page="page"
         :total="total"
@@ -343,6 +364,7 @@ onMounted(async () => {
       />
     </div>
 
+    <!-- 弹窗合集 -->
     <AdminFilesDialogs
       v-model:edit-name="editName"
       v-model:edit-directory="editDirectory"
