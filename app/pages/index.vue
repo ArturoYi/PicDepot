@@ -2,6 +2,12 @@
 definePageMeta({ middleware: 'auth' })
 
 const uploadPanelRef = ref<{ uploadFiles: (files: File[]) => void } | null>(null)
+const { directory } = useUploadPreferences()
+const directoryHint = computed(() =>
+  directory.value.trim()
+    ? `将上传到 ${directory.value.trim()}`
+    : '支持多图；未选目录时按类型自动归类'
+)
 
 onMounted(() => {
   window.addEventListener('paste', onPaste)
@@ -39,21 +45,24 @@ function onPaste(event: ClipboardEvent) {
       }"
     >
       <template #header>
-        <div class="flex items-center gap-2.5">
-          <div class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <UIcon
-              name="i-lucide-cloud-upload"
-              class="size-5"
-            />
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex min-w-0 items-center gap-2.5">
+            <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <UIcon
+                name="i-lucide-cloud-upload"
+                class="size-5"
+              />
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-highlighted">
+                上传文件
+              </p>
+              <p class="truncate text-xs text-muted">
+                {{ directoryHint }}
+              </p>
+            </div>
           </div>
-          <div class="min-w-0">
-            <p class="text-sm font-semibold text-highlighted">
-              上传文件
-            </p>
-            <p class="text-xs text-muted">
-              支持多图；手机可左右滑动查看进度
-            </p>
-          </div>
+          <UploadDirectoryButton class="shrink-0" />
         </div>
       </template>
       <FileUploadPanel

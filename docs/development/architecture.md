@@ -29,6 +29,7 @@ docs/                # VitePress 使用说明（本站）
 - `getBucket(event)` → `env.BUCKET`
 - `getPublicBaseUrl(event)` → `R2_PUBLIC_BASE_URL` 或 runtimeConfig 回退
 - `getMaxUploadBytes(event)` → `MAX_UPLOAD_BYTES` 或 runtimeConfig 回退
+- `getStorageQuotaBytes(event)` → `STORAGE_QUOTA_BYTES` 或 runtimeConfig 回退（默认 10GB）
 
 未绑定资源时抛出 503，便于本地未配置时快速发现问题。
 

@@ -17,7 +17,7 @@
 | PATCH | `/api/admin/files/:id` | 管理员 | 改文件名 / 目录 |
 | POST | `/api/admin/files/batch-delete` | 管理员 | 批量删除 |
 | POST | `/api/admin/files/batch-move` | 管理员 | 批量改目录 |
-| GET | `/api/admin/stats` | 管理员 | 文件数 / 空间 / 7 日上传 |
+| GET | `/api/admin/stats` | 管理员 | 文件数 / 空间占用百分比 / 类型与目录分布 / 24 小时·7 日·30 日上传 / 运行绑定 |
 | GET | `/api/admin/directories` | 管理员 | 目录列表 |
 | GET | `/api/admin/users` | 管理员 | 用户列表 |
 | POST | `/api/admin/users` | 管理员 | 创建用户 |

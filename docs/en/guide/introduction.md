@@ -49,7 +49,7 @@ Browser / Client（Nuxt UI）
 - Copy as raw / Markdown / HTML / BBCode
 - Library: pagination, search/filter, rename, move directory
 - Batch delete and batch move
-- Directory autocomplete, usage stats
+- Directory autocomplete, usage stats (storage %, type/directory breakdown, 24h / 7d / 30d)
 - Optional CORS (`runtimeConfig.corsOrigins`) for credentialed clients
 - Admin login, bootstrap, user management
 

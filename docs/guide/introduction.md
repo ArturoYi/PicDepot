@@ -49,7 +49,7 @@ Browser / Client（Nuxt UI）
 - 多格式复制（直链 / Markdown / HTML / BBCode）
 - 文件库：分页、搜索筛选、改名、改目录
 - 批量删除、批量移动
-- 目录联想、用量统计（文件数 / 空间 / 近 7 日）
+- 目录联想、用量统计（空间占用百分比、类型/目录分布、近 24 小时 / 7 日 / 30 日）
 - CORS（可选 `runtimeConfig.corsOrigins`，便于带 Cookie 的客户端）
 - 管理员登录、首次初始化、用户管理
 

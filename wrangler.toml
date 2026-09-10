@@ -20,6 +20,8 @@ compatibility_flags = ["nodejs_compat"]
 R2_PUBLIC_BASE_URL = "https://filebed.chenyiren.top"
 # 单文件上限 20MB
 MAX_UPLOAD_BYTES = "20971520"
+# 存储配额（系统状态用量百分比；默认 10GB，对应 R2 免费额度。设为 0 则不展示百分比）
+STORAGE_QUOTA_BYTES = "10737418240"
 
 [[d1_databases]]
 binding = "DB"

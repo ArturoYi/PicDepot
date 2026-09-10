@@ -12,4 +12,5 @@ export type CfImgBedEnv = Partial<Env> & {
   RESET_KEY?: string
   BOOTSTRAP_ADMIN_USER?: string
   BOOTSTRAP_ADMIN_PASS?: string
+  STORAGE_QUOTA_BYTES?: string
 }

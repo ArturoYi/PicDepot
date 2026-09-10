@@ -52,3 +52,15 @@ export function getMaxUploadBytes(event: H3Event): number {
   }
   return Number(useRuntimeConfig(event).maxUploadBytes) || 20 * 1024 * 1024
 }
+
+/** 存储配额：用于系统状态用量百分比。0 表示不展示百分比。默认 10GB（R2 免费额度）。 */
+export function getStorageQuotaBytes(event: H3Event): number {
+  const env = getCfEnv(event)
+  if (env.STORAGE_QUOTA_BYTES !== undefined && env.STORAGE_QUOTA_BYTES !== '') {
+    const n = Number(env.STORAGE_QUOTA_BYTES)
+    if (Number.isFinite(n) && n >= 0) return n
+  }
+  const fromConfig = Number(useRuntimeConfig(event).storageQuotaBytes)
+  if (Number.isFinite(fromConfig) && fromConfig >= 0) return fromConfig
+  return 10 * 1024 * 1024 * 1024
+}

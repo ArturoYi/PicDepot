@@ -17,7 +17,7 @@ Admin endpoints require an **admin session** unless noted.
 | PATCH | `/api/admin/files/:id` | admin | Rename / change directory |
 | POST | `/api/admin/files/batch-delete` | admin | Batch delete |
 | POST | `/api/admin/files/batch-move` | admin | Batch move |
-| GET | `/api/admin/stats` | admin | Counts / storage / 7-day uploads |
+| GET | `/api/admin/stats` | admin | Counts / usage % / type & directory breakdown / 24h·7d·30d uploads / runtime bindings |
 | GET | `/api/admin/directories` | admin | Directory list |
 | GET | `/api/admin/users` | admin | User list |
 | POST | `/api/admin/users` | admin | Create user |

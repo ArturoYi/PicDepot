@@ -4,7 +4,7 @@
 
 The home page is guarded by auth middleware — log in first.
 
-1. Optionally set a directory (existing directories can autocomplete).
+1. Tap **Upload directory** to pick or type a target folder (existing names autocomplete; leave empty to auto-sort by type).
 2. Drag, pick, or paste images/files.
 3. Copy links in multiple formats after success.
 
@@ -25,9 +25,8 @@ Constraints:
 |------|------|
 | Library | Pagination, search/filter, preview, rename, move, delete |
 | Batch | Batch delete, batch move |
-| Stats | File count, storage used, last 7 days uploads |
 | Users | Admin account management |
-| Status | Health / runtime info |
+| Status | Storage usage %, type/directory breakdown, 24h / 7d / 30d uploads, runtime bindings |
 
 ## Link formats
 

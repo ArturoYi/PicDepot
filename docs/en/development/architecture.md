@@ -29,6 +29,7 @@ docs/                # VitePress docs (this site)
 - `getBucket(event)` → `env.BUCKET`
 - `getPublicBaseUrl(event)` → `R2_PUBLIC_BASE_URL` or runtimeConfig fallback
 - `getMaxUploadBytes(event)` → `MAX_UPLOAD_BYTES` or runtimeConfig fallback
+- `getStorageQuotaBytes(event)` → `STORAGE_QUOTA_BYTES` or runtimeConfig fallback (default 10GB)
 
 Missing bindings throw 503 so misconfiguration fails loudly.
 

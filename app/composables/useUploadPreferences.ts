@@ -28,11 +28,18 @@ function writePrefs(prefs: UploadPrefs) {
 }
 
 export function useUploadPreferences() {
-  const initial = readPrefs()
-  const directory = ref(initial.directory)
+  const directory = useState('picdepot-upload-directory', () => '')
+  const hydrated = useState('picdepot-upload-directory-hydrated', () => false)
 
-  watch(directory, () => {
-    writePrefs({ directory: directory.value })
+  onMounted(() => {
+    if (hydrated.value) return
+    directory.value = readPrefs().directory
+    hydrated.value = true
+  })
+
+  watch(directory, (value) => {
+    if (!hydrated.value) return
+    writePrefs({ directory: value })
   })
 
   return { directory }

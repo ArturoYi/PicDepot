@@ -168,6 +168,14 @@ function onSelect(file: File[] | null | undefined) {
   uploadFiles(list)
 }
 
+function onCreateDirectory(name: string) {
+  const next = name.trim()
+  directory.value = next
+  if (next && !directoryItems.value.includes(next)) {
+    directoryItems.value = [...directoryItems.value, next]
+  }
+}
+
 function onFolderPick(event: Event) {
   const input = event.target as HTMLInputElement
   const files = input.files ? [...input.files] : []
@@ -187,11 +195,13 @@ defineExpose({ loadDirectories, uploadFiles })
     >
       <UInputMenu
         v-model="directory"
+        mode="autocomplete"
         :items="directoryItems"
         placeholder="留空按类型自动归类"
         icon="i-lucide-folder"
         create-item
         class="w-full"
+        @create="onCreateDirectory"
       />
     </UFormField>
 
