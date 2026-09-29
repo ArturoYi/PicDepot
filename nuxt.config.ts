@@ -1,7 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { readFileSync } from 'node:fs'
 import { createResolver } from 'nuxt/kit'
 
 const { resolve } = createResolver(import.meta.url)
+const { version: appVersion } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8')
+) as { version: string }
 const heicToStub = resolve('./app/stubs/heic-to.stub.ts')
 const utifStub = resolve('./app/stubs/utif.stub.ts')
 
@@ -38,6 +42,8 @@ export default defineNuxtConfig({
     corsOrigins: '',
     public: {
       siteName: 'PicDepot',
+      /** 来自 package.json version，顶栏展示 */
+      appVersion,
       maxUploadMb: 20
     }
   },

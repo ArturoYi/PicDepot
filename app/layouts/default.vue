@@ -207,6 +207,10 @@ watch(menuOpen, (open) => {
             <span class="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-emerald-400 ring-2 ring-default animate-pulse" />
           </div>
           <span class="truncate text-base font-bold tracking-tight text-highlighted">{{ config.public.siteName }}</span>
+          <span
+            class="shrink-0 rounded-md border border-default/60 bg-elevated/70 px-1.5 py-0.5 text-[10px] font-medium leading-none tabular-nums text-muted"
+            :title="`版本 ${config.public.appVersion}`"
+          >v{{ config.public.appVersion }}</span>
         </NuxtLink>
       </template>
 
