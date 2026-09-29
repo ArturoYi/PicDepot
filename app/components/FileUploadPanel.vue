@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isHeicLikeFile } from '~/utils/heicDetect'
+import { needsClientImageConvert } from '~/utils/needsClientImageConvert'
 import { resolveUploadDirectory } from '~/utils/uploadDirectory'
 import type { UploadQueueItem } from './uploadQueue'
 
@@ -30,7 +30,7 @@ const items = ref<UploadQueueItem[]>([])
 const maxMb = computed(() => Number(config.public.maxUploadMb) || 20)
 
 function canPreview(file: File) {
-  return file.type.startsWith('image/') && !isHeicLikeFile(file)
+  return file.type.startsWith('image/') && !needsClientImageConvert(file)
 }
 
 function revokePreview(item: UploadQueueItem) {
@@ -77,7 +77,7 @@ async function uploadOne(item: UploadQueueItem, file: File) {
   }
 
   let prepared = file
-  if (isHeicLikeFile(file)) {
+  if (needsClientImageConvert(file)) {
     item.status = 'converting'
     item.progress = 0
     prepared = await (await import('~/utils/prepareUploadFile.client')).prepareUploadFile(file)
@@ -208,9 +208,9 @@ defineExpose({ loadDirectories, uploadFiles })
     <UFileUpload
       v-model="picked"
       multiple
-      accept="image/*,.heic,.heif,video/*,audio/*,.pdf,.zip"
+      accept="image/*,.heic,.heif,.tif,.tiff,video/*,audio/*,.pdf,.zip"
       :label="uploading ? '正在上传…' : compact ? '拖拽或点击上传' : '拖拽、点击或粘贴上传'"
-      :description="compact ? undefined : '支持多文件；HEIC 会自动转为 WebP/JPEG 以便预览'"
+      :description="compact ? undefined : '支持多文件；HEIC、TIFF 会自动转为 WebP/JPEG 以便预览'"
       :disabled="uploading"
       :preview="false"
       icon="i-lucide-image-plus"

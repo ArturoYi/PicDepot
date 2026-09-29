@@ -3,6 +3,7 @@ import { createResolver } from 'nuxt/kit'
 
 const { resolve } = createResolver(import.meta.url)
 const heicToStub = resolve('./app/stubs/heic-to.stub.ts')
+const utifStub = resolve('./app/stubs/utif.stub.ts')
 
 type ViteAlias
   = | Record<string, string>
@@ -66,7 +67,7 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['heic-to']
+      include: ['heic-to', 'utif']
     }
   },
 
@@ -75,10 +76,15 @@ export default defineNuxtConfig({
       if (!isServer || !config.resolve) return
       const current = config.resolve.alias
       const nextAlias: ViteAlias = Array.isArray(current)
-        ? [...current, { find: /^heic-to$/, replacement: heicToStub }]
+        ? [
+            ...current,
+            { find: /^heic-to$/, replacement: heicToStub },
+            { find: /^utif$/, replacement: utifStub }
+          ]
         : {
             ...(current as Record<string, string> | undefined),
-            'heic-to': heicToStub
+            'heic-to': heicToStub,
+            'utif': utifStub
           }
       ;(config.resolve as { alias?: ViteAlias }).alias = nextAlias
     }

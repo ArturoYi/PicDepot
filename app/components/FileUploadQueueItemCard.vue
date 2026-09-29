@@ -87,7 +87,7 @@ const progressValue = computed(() =>
             class="rounded-full shadow-xs"
           />
           <div class="flex items-center justify-between text-[10px] text-white/80">
-            <span>{{ item.status === 'converting' ? 'HEIC 转码中…' : '正在上传到 R2…' }}</span>
+            <span>{{ item.status === 'converting' ? '转码中…' : '正在上传到 R2…' }}</span>
             <span
               v-if="item.status === 'uploading'"
               class="font-mono tabular-nums"

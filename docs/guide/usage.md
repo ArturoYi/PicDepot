@@ -12,7 +12,7 @@
 
 - 未登录禁止上传（接口校验会话 Cookie）
 - 单文件 ≤ 20MB（可由 `MAX_UPLOAD_BYTES` 调整）
-- HEIC 等格式会在客户端做兼容处理（视浏览器能力）
+- HEIC、TIFF 会在客户端转为 WebP 或 JPEG，便于浏览器预览
 
 ## 登录与初始化（`/login`）
 

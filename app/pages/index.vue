@@ -101,7 +101,7 @@ function onPaste(event: ClipboardEvent) {
               name="i-lucide-sparkles"
               class="size-3.5 text-emerald-500"
             />
-            <span>HEIC 自动转码 WebP</span>
+            <span>HEIC / TIFF 自动转码 WebP</span>
           </div>
         </div>
       </UCard>

@@ -12,7 +12,7 @@ Constraints:
 
 - No session → uploads denied (API checks the session cookie)
 - Max 20MB per file (overridable via `MAX_UPLOAD_BYTES`)
-- HEIC may be converted client-side depending on the browser
+- HEIC and TIFF are converted to WebP or JPEG in the browser before upload
 
 ## Login & bootstrap (`/login`)
 
