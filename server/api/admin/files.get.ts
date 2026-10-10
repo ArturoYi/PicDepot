@@ -13,7 +13,8 @@ export default defineEventHandler(async (event) => {
     q: typeof query.q === 'string' ? query.q : undefined,
     dir: typeof query.dir === 'string' ? query.dir : undefined,
     type: typeof query.type === 'string' ? query.type : undefined,
-    visibility: typeof query.visibility === 'string' ? query.visibility : undefined
+    visibility: typeof query.visibility === 'string' ? query.visibility : undefined,
+    excludeDir: typeof query.excludeDir === 'string' ? query.excludeDir : undefined
   }
 
   const { clause, binds } = buildFileListWhere(filters)

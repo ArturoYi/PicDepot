@@ -49,7 +49,7 @@ watch(imgEl, (el) => {
       :alt="alt || ''"
       :loading="eager ? 'eager' : 'lazy'"
       decoding="async"
-      class="size-full transition-opacity duration-300"
+      class="absolute inset-0 size-full transition-opacity duration-300"
       :class="[
         fit === 'contain' ? 'object-contain' : 'object-cover object-center',
         loaded ? 'opacity-100' : 'opacity-0'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AdminFileRow } from '~/components/admin/files/fileUtils'
-import { isPreviewableFile } from '~/components/admin/files/fileUtils'
+import { DEFAULT_HIDDEN_DIRECTORY, isPreviewableFile } from '~/components/admin/files/fileUtils'
 
 const toast = useToast()
 const listLoading = ref(true)
@@ -25,6 +25,8 @@ const filterDir = ref('')
 const filterType = ref('')
 const directoryItems = ref<string[]>([])
 const directoryStats = ref<Array<{ directory: string, count: number }>>([])
+/** 目录列表已成功拉到；失败时无法确认是否存在「博客」，交给服务端回退 */
+const directoriesReady = ref(false)
 
 const selectedIds = ref<Set<string>>(new Set())
 const selectAll = ref(false)
@@ -44,12 +46,16 @@ const batchWorking = ref(false)
 const previewTarget = ref<AdminFileRow | null>(null)
 
 function buildQuery() {
+  const dir = filterDir.value.trim()
+  const hasHiddenDirectory = directoryItems.value.includes(DEFAULT_HIDDEN_DIRECTORY)
+  const excludeHidden = !dir && (!directoriesReady.value || hasHiddenDirectory)
   return {
     page: page.value,
     limit: limit.value,
     q: filterQ.value.trim() || undefined,
-    dir: filterDir.value.trim() || undefined,
-    type: filterType.value.trim() || undefined
+    dir: dir || undefined,
+    type: filterType.value.trim() || undefined,
+    excludeDir: excludeHidden ? DEFAULT_HIDDEN_DIRECTORY : undefined
   }
 }
 
@@ -61,9 +67,11 @@ async function loadDirectories() {
     }>('/api/admin/directories')
     directoryItems.value = res.directories
     directoryStats.value = res.items ?? res.directories.map(directory => ({ directory, count: 0 }))
+    directoriesReady.value = true
   } catch {
     directoryItems.value = []
     directoryStats.value = []
+    directoriesReady.value = false
   }
 }
 
@@ -273,21 +281,9 @@ onMounted(async () => {
         class="ui-frame-clip absolute inset-0 p-1.5"
         :class="selectedIds.size ? 'pb-16' : ''"
       >
-        <!-- 加载骨架屏 -->
-        <div
-          v-if="listLoading && !files.length"
-          class="grid size-full grid-cols-2 gap-3 p-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-        >
-          <USkeleton
-            v-for="n in 10"
-            :key="n"
-            class="aspect-square rounded-2xl"
-          />
-        </div>
-
         <!-- 空状态展示 -->
         <div
-          v-else-if="!listLoading && !files.length"
+          v-if="!listLoading && !files.length"
           class="flex h-full flex-col items-center justify-center gap-3 p-8 text-center"
         >
           <div class="flex size-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-xs">
@@ -317,8 +313,9 @@ onMounted(async () => {
 
         <!-- 文件瀑布流网格 -->
         <AdminFilesMasonry
-          v-else-if="files.length"
+          v-else-if="listLoading || files.length"
           :files="files"
+          :loading="listLoading && !files.length"
           :selected-ids="selectedIds"
           @toggle-row="toggleRow"
           @preview="openPreview"

@@ -1,3 +1,6 @@
+/** 未指定目录、且库里确有该分类时，默认列表不展示；没有该分类则不排除 */
+export const DEFAULT_HIDDEN_DIRECTORY = '博客'
+
 export interface AdminFileRow {
   id: string
   file_name: string

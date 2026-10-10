@@ -7,10 +7,14 @@ import {
   isVideoFile
 } from './fileUtils'
 
-defineProps<{
+withDefaults(defineProps<{
   files: AdminFileRow[]
   selectedIds: Set<string>
-}>()
+  /** 首屏加载：骨架与正式卡片共用同一高度 */
+  loading?: boolean
+}>(), {
+  loading: false
+})
 
 const emit = defineEmits<{
   'toggle-row': [id: string, checked: boolean]
@@ -45,6 +49,15 @@ const cardFooterPx = computed(() => overlayLayout.value ? 0 : desktopFooterPx)
 /** 卡片总高：图区接近正方形，避免操作栏挤掉缩略图 */
 const estimateSize = computed(() => Math.round(laneWidth.value + cardFooterPx.value))
 
+const skeletonCount = computed(() => lanes.value * 3)
+
+const skeletonGridStyle = computed(() => ({
+  gridTemplateColumns: `repeat(${lanes.value}, minmax(0, 1fr))`,
+  gap: `${gap}px`,
+  paddingTop: '8px',
+  paddingBottom: '8px'
+}))
+
 const virtualize = computed(() => ({
   gap,
   lanes: lanes.value,
@@ -65,7 +78,33 @@ function onPreview(file: AdminFileRow) {
     ref="rootEl"
     class="size-full min-h-0"
   >
+    <div
+      v-if="loading"
+      class="grid size-full content-start"
+      :style="skeletonGridStyle"
+    >
+      <article
+        v-for="n in skeletonCount"
+        :key="n"
+        class="ui-frame border-default/80"
+        :style="{ height: `${estimateSize}px` }"
+      >
+        <div class="ui-frame-clip flex h-full flex-col bg-default/90">
+          <USkeleton class="min-h-0 flex-1 rounded-none" />
+          <div
+            v-if="!overlayLayout"
+            class="shrink-0 border-t border-default/70"
+            :style="{ height: `${cardFooterPx}px` }"
+          >
+            <USkeleton class="mx-3 mt-2.5 h-3 w-2/3 rounded-md" />
+            <USkeleton class="mx-3 mt-1.5 h-2.5 w-1/2 rounded-md" />
+          </div>
+        </div>
+      </article>
+    </div>
+
     <UScrollArea
+      v-else
       v-slot="{ item, index }"
       :items="files"
       :virtualize="virtualize"
@@ -89,7 +128,7 @@ function onPreview(file: AdminFileRow) {
           <!-- 缩略图与点击预览 -->
           <button
             type="button"
-            class="relative min-h-0 w-full flex-1 overflow-hidden bg-elevated/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            class="relative h-0 min-h-0 w-full flex-1 overflow-hidden bg-elevated/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             :aria-label="`预览 ${item.file_name}`"
             @click="onPreview(item)"
           >
