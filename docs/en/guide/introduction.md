@@ -41,7 +41,7 @@ Browser / Client（Nuxt UI）
 1. **Split metadata and blobs**: list via D1; read files via R2 public URLs — never list the bucket for the UI.
 2. **Control read amplification**: image traffic should mostly bypass the Worker.
 3. **Secure defaults**: uploads and admin require a login session; credentials live in D1, not source.
-4. **Clear upload limits**: no multipart chunking; max **20MB** per file.
+4. **Clear upload limits**: no multipart chunking. Images and other files max **20MB**, video max **50MB**.
 
 ## Current features
 
@@ -56,7 +56,7 @@ Browser / Client（Nuxt UI）
 ## Out of scope (v1)
 
 - Non-Cloudflare storage or bot channels
-- Chunked upload / files over 20MB
+- Chunked upload / files over the 20MB image limit or 50MB video limit
 - Docker / self-hosted Node runtime
 - Default Worker reverse-proxy for public reads (use R2 direct links)
 

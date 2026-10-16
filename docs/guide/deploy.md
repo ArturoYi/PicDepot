@@ -59,6 +59,7 @@ compatibility_flags = ["nodejs_compat"]
 # 公网访问根地址，勿尾斜杠 —— 生产以本段 / Dashboard Variables 为准，不需要 .env
 R2_PUBLIC_BASE_URL = "https://pub-xxxx.r2.dev"
 MAX_UPLOAD_BYTES = "20971520"
+MAX_VIDEO_UPLOAD_BYTES = "52428800"
 
 [[d1_databases]]
 binding = "DB"

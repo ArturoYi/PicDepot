@@ -185,9 +185,12 @@ defineEmits<{
             style="height: min(70dvh, 900px, calc(100dvh - 14rem))"
           >
             <video
+              :key="previewTarget.url"
               :src="previewTarget.url"
               controls
-              class="max-h-full max-w-full object-contain"
+              playsinline
+              preload="metadata"
+              class="max-h-full max-w-full bg-black object-contain"
             />
           </div>
         </div>

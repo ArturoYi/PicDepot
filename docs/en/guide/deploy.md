@@ -55,6 +55,7 @@ compatibility_flags = ["nodejs_compat"]
 # Public base URL, no trailing slash — production uses this / Dashboard Variables, not .env
 R2_PUBLIC_BASE_URL = "https://pub-xxxx.r2.dev"
 MAX_UPLOAD_BYTES = "20971520"
+MAX_VIDEO_UPLOAD_BYTES = "52428800"
 
 [[d1_databases]]
 binding = "DB"

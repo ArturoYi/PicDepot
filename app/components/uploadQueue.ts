@@ -7,9 +7,12 @@ export interface UploadQueueResult {
   id: string
 }
 
+export type UploadPreviewKind = 'image' | 'video'
+
 export interface UploadQueueItem {
   id: string
   fileName: string
+  previewKind: UploadPreviewKind | null
   previewUrl: string | null
   progress: number
   status: UploadQueueStatus

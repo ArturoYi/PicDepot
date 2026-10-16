@@ -18,8 +18,9 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 # R2 公网访问根地址（r2.dev 或自定义域名，勿尾斜杠）——生产以本段 / Dashboard vars 为准，非 .env
 R2_PUBLIC_BASE_URL = "https://filebed.chenyiren.top"
-# 单文件上限 20MB
+# 图片及其他文件上限 20MB；视频上限 50MB
 MAX_UPLOAD_BYTES = "20971520"
+MAX_VIDEO_UPLOAD_BYTES = "52428800"
 # 存储配额（系统状态用量百分比；默认 10GB，对应 R2 免费额度。设为 0 则不展示百分比）
 STORAGE_QUOTA_BYTES = "10737418240"
 

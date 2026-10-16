@@ -23,7 +23,7 @@ features:
   - title: Cloudflare Only
     details: No Telegram / S3 / Docker. Workers + Assets in one deploy. D1 for metadata, R2 public URLs for files.
   - title: Secure by Default
-    details: Uploads require a login session. 20MB per file. Admin session protects management APIs.
+    details: Uploads require a login session. 20MB for images and other files, 50MB for video. Admin session protects management APIs.
   - title: Built-in Admin
     details: Paginated library, filters, batch move/delete, multi-format copy, paste upload, directory hints, and usage stats.
   - title: Easy to Extend

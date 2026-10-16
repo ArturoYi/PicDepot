@@ -11,7 +11,8 @@
 约束：
 
 - 未登录禁止上传（接口校验会话 Cookie）
-- 单文件 ≤ 20MB（可由 `MAX_UPLOAD_BYTES` 调整）
+- 图片及其他文件 ≤ 20MB（`MAX_UPLOAD_BYTES`）
+- 视频 ≤ 50MB（`MAX_VIDEO_UPLOAD_BYTES`）。上传前会在浏览器内压成 WebM 或 MP4，便于在线预览；原片已能播放且压完没有变小，则保留原文件
 - HEIC、TIFF 会在客户端转为 WebP 或 JPEG，便于浏览器预览
 
 ## 登录与初始化（`/login`）

@@ -20,7 +20,8 @@
 | 变量 | 说明 |
 |------|------|
 | `R2_PUBLIC_BASE_URL` | R2 公网根 URL，无尾斜杠 |
-| `MAX_UPLOAD_BYTES` | 单文件字节上限，默认 `20971520`（20MB） |
+| `MAX_UPLOAD_BYTES` | 图片及其他文件的字节上限，默认 `20971520`（20MB） |
+| `MAX_VIDEO_UPLOAD_BYTES` | 视频字节上限，默认 `52428800`（50MB） |
 | `STORAGE_QUOTA_BYTES` | 存储配额（系统状态用量百分比）。默认 `10737418240`（10GB，R2 免费额度）；`0` 则不展示百分比 |
 
 可选 Secrets / vars（见代码注释）：
@@ -38,11 +39,13 @@
 | 键 | 说明 |
 |----|------|
 | `r2PublicBaseUrl` | 本地回退公网根地址 |
-| `maxUploadBytes` | 本地回退大小上限 |
+| `maxUploadBytes` | 本地回退大小上限（图片及其他） |
+| `maxVideoUploadBytes` | 本地回退视频大小上限 |
 | `storageQuotaBytes` | 本地回退存储配额（默认 10GB） |
 | `corsOrigins` | 逗号分隔；空则回显请求 Origin（便于 PicGo 等） |
 | `public.siteName` | 站点名 |
-| `public.maxUploadMb` | 前端展示用上限（MB） |
+| `public.maxUploadMb` | 前端展示用上限（MB，图片及其他） |
+| `public.maxVideoUploadMb` | 前端展示用视频上限（MB） |
 
 本地可用 `.env` 覆盖，例如：
 

@@ -36,6 +36,7 @@ export default defineNuxtConfig({
      */
     r2PublicBaseUrl: 'https://pub-76500580e79f4ca683b12ae9254508a1.r2.dev',
     maxUploadBytes: 20 * 1024 * 1024,
+    maxVideoUploadBytes: 50 * 1024 * 1024,
     /** 系统状态用量百分比的分母；0 表示不展示百分比。默认 10GB（R2 免费额度）。 */
     storageQuotaBytes: 10 * 1024 * 1024 * 1024,
     /** 逗号分隔；空则回显请求 Origin（便于 PicGo 等） */
@@ -44,7 +45,8 @@ export default defineNuxtConfig({
       siteName: 'PicDepot',
       /** 来自 package.json version，顶栏展示 */
       appVersion,
-      maxUploadMb: 20
+      maxUploadMb: 20,
+      maxVideoUploadMb: 50
     }
   },
 
@@ -73,7 +75,7 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['heic-to', 'utif']
+      include: ['heic-to', 'utif', 'mediabunny']
     }
   },
 

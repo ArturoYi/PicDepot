@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { isVideoUpload } from '#shared/utils/uploadLimits'
 import { needsClientImageConvert } from '~/utils/needsClientImageConvert'
 import { resolveUploadDirectory } from '~/utils/uploadDirectory'
-import type { UploadQueueItem } from './uploadQueue'
+import type { UploadPreviewKind, UploadQueueItem } from './uploadQueue'
 
 const props = withDefaults(defineProps<{
   directoriesEndpoint?: string
@@ -26,11 +27,20 @@ const directoryItems = ref<string[]>([])
 const folderInputRef = ref<HTMLInputElement | null>(null)
 const picked = ref<File[] | null>(null)
 const items = ref<UploadQueueItem[]>([])
+let abortController = new AbortController()
 
 const maxMb = computed(() => Number(config.public.maxUploadMb) || 20)
+const maxVideoMb = computed(() => Number(config.public.maxVideoUploadMb) || 50)
 
-function canPreview(file: File) {
-  return file.type.startsWith('image/') && !needsClientImageConvert(file)
+function previewKindOf(file: File): UploadPreviewKind | null {
+  if (isVideoUpload(file.name, file.type)) return 'video'
+  if (file.type.startsWith('image/') && !needsClientImageConvert(file)) return 'image'
+  return null
+}
+
+function isAbortError(error: unknown) {
+  return (error instanceof DOMException && error.name === 'AbortError')
+    || (error instanceof Error && error.name === 'ConversionCanceledError')
 }
 
 function revokePreview(item: UploadQueueItem) {
@@ -45,13 +55,27 @@ function revokeAll() {
 }
 
 function createItem(file: File): UploadQueueItem {
+  const previewKind = previewKindOf(file)
   return {
     id: crypto.randomUUID(),
     fileName: file.name,
-    previewUrl: canPreview(file) ? URL.createObjectURL(file) : null,
+    previewKind,
+    previewUrl: previewKind ? URL.createObjectURL(file) : null,
     progress: 0,
     status: 'queued'
   }
+}
+
+function applyPreparedPreview(item: UploadQueueItem, original: File, prepared: File) {
+  if (prepared === original) return
+  revokePreview(item)
+  item.fileName = `${original.name} → ${prepared.name}`
+  item.previewKind = prepared.type.startsWith('video/')
+    ? 'video'
+    : prepared.type.startsWith('image/')
+      ? 'image'
+      : item.previewKind
+  item.previewUrl = URL.createObjectURL(prepared)
 }
 
 async function loadDirectories() {
@@ -69,25 +93,45 @@ onMounted(() => {
   }
 })
 
-onUnmounted(revokeAll)
+onUnmounted(() => {
+  abortController.abort()
+  revokeAll()
+})
 
-async function uploadOne(item: UploadQueueItem, file: File) {
-  if (file.size > maxMb.value * 1024 * 1024) {
-    throw new Error(`「${file.name}」超过 ${maxMb.value}MB 限制`)
+async function uploadOne(item: UploadQueueItem, file: File, signal: AbortSignal) {
+  const video = isVideoUpload(file.name, file.type)
+  const limitMb = video ? maxVideoMb.value : maxMb.value
+  const limitBytes = limitMb * 1024 * 1024
+  if (file.size > limitBytes) {
+    throw new Error(`「${file.name}」超过 ${limitMb}MB 限制`)
   }
 
   let prepared = file
-  if (needsClientImageConvert(file)) {
+  if (video) {
+    item.status = 'converting'
+    item.progress = 0
+    prepared = await (await import('~/utils/prepareUploadVideo.client')).prepareUploadVideo(file, {
+      maxBytes: limitBytes,
+      signal,
+      onProgress: (percent) => {
+        item.progress = percent
+      }
+    })
+    if (prepared.size > limitBytes) {
+      throw new Error(`「${file.name}」压缩后仍超过 ${limitMb}MB`)
+    }
+    applyPreparedPreview(item, file, prepared)
+  } else if (needsClientImageConvert(file)) {
     item.status = 'converting'
     item.progress = 0
     prepared = await (await import('~/utils/prepareUploadFile.client')).prepareUploadFile(file)
-    if (prepared.size > maxMb.value * 1024 * 1024) {
-      throw new Error(`「${file.name}」转换后超过 ${maxMb.value}MB 限制`)
+    if (prepared.size > limitBytes) {
+      throw new Error(`「${file.name}」转换后超过 ${limitMb}MB 限制`)
     }
-    revokePreview(item)
-    item.fileName = prepared.name !== file.name ? `${file.name} → ${prepared.name}` : prepared.name
-    item.previewUrl = URL.createObjectURL(prepared)
+    applyPreparedPreview(item, file, prepared)
   }
+
+  if (signal.aborted) throw new DOMException('上传已取消', 'AbortError')
 
   item.status = 'uploading'
   item.progress = 0
@@ -95,6 +139,7 @@ async function uploadOne(item: UploadQueueItem, file: File) {
   const targetDir = resolveUploadDirectory(prepared, directory.value)
   const result = await uploadFileWithProgress(prepared, {
     directory: targetDir,
+    signal,
     onProgress: (percent) => {
       item.progress = percent
     }
@@ -107,6 +152,10 @@ async function uploadOne(item: UploadQueueItem, file: File) {
     fileName: result.fileName,
     size: result.size,
     id: result.id
+  }
+  if (item.previewKind === 'video' && result.url) {
+    revokePreview(item)
+    item.previewUrl = result.url
   }
 }
 
@@ -122,6 +171,10 @@ async function uploadFiles(raw: File[]) {
     return
   }
 
+  abortController.abort()
+  abortController = new AbortController()
+  const signal = abortController.signal
+
   revokeAll()
   items.value = list.map(createItem)
   uploading.value = true
@@ -129,12 +182,18 @@ async function uploadFiles(raw: File[]) {
 
   try {
     for (let i = 0; i < list.length; i++) {
+      if (signal.aborted) break
       const file = list[i]!
       const item = items.value[i]!
       try {
-        await uploadOne(item, file)
+        await uploadOne(item, file, signal)
         successCount++
       } catch (error: unknown) {
+        if (isAbortError(error)) {
+          item.status = 'error'
+          item.error = '已取消'
+          break
+        }
         const message = error instanceof Error ? error.message : '未知错误'
         item.status = 'error'
         item.error = message
@@ -143,6 +202,15 @@ async function uploadFiles(raw: File[]) {
           description: message,
           color: 'error'
         })
+      }
+    }
+
+    if (signal.aborted) {
+      for (const item of items.value) {
+        if (item.status === 'queued' || item.status === 'converting' || item.status === 'uploading') {
+          item.status = 'error'
+          item.error = '已取消'
+        }
       }
     }
 
@@ -210,7 +278,7 @@ defineExpose({ loadDirectories, uploadFiles })
       multiple
       accept="image/*,.heic,.heif,.tif,.tiff,video/*,audio/*,.pdf,.zip"
       :label="uploading ? '正在上传…' : compact ? '拖拽或点击上传' : '拖拽、点击或粘贴上传'"
-      :description="compact ? undefined : '支持多文件；HEIC、TIFF 会自动转为 WebP/JPEG 以便预览'"
+      :description="compact ? undefined : '图片 ≤20MB；视频 ≤50MB，会先压缩为可在线播放的格式'"
       :disabled="uploading"
       :preview="false"
       icon="i-lucide-image-plus"
@@ -245,6 +313,12 @@ defineExpose({ loadDirectories, uploadFiles })
       :items="items"
       :show-result="showResult"
       class="min-h-0"
+    />
+
+    <UploadProgressOverlay
+      :open="uploading"
+      :items="items"
+      @cancel="abortController.abort()"
     />
   </div>
 </template>

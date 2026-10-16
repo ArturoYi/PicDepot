@@ -13,4 +13,5 @@ export type CfImgBedEnv = Partial<Env> & {
   BOOTSTRAP_ADMIN_USER?: string
   BOOTSTRAP_ADMIN_PASS?: string
   STORAGE_QUOTA_BYTES?: string
+  MAX_VIDEO_UPLOAD_BYTES?: string
 }

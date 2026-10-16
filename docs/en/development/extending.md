@@ -15,7 +15,7 @@ Good next steps that fit the current architecture:
 ## Guidelines
 
 1. **Do not list R2 for the product UI** — keep writing to D1.
-2. **Keep the 20MB / no-chunking model** unless you accept the complexity.
+2. **Keep images at 20MB, video at 50MB, and skip chunking** unless you accept the complexity.
 3. **Secrets stay in Secrets**, never committed `[vars]`.
 4. New bindings (KV, Images, …) need `wrangler.toml`, `pnpm cf:types`, and docs updates.
 

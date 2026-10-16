@@ -20,7 +20,8 @@ Without both, the app boots but upload/admin APIs return 503.
 | Var | Meaning |
 |------|------|
 | `R2_PUBLIC_BASE_URL` | R2 public root URL, no trailing slash |
-| `MAX_UPLOAD_BYTES` | Max file size in bytes, default `20971520` (20MB) |
+| `MAX_UPLOAD_BYTES` | Max size for images and other files, default `20971520` (20MB) |
+| `MAX_VIDEO_UPLOAD_BYTES` | Max video size, default `52428800` (50MB) |
 | `STORAGE_QUOTA_BYTES` | Storage quota for the status usage %. Default `10737418240` (10GB, R2 free tier); `0` hides the percentage |
 
 Optional secrets / vars (see code comments):
@@ -38,11 +39,13 @@ See root `nuxt.config.ts`:
 | Key | Meaning |
 |----|------|
 | `r2PublicBaseUrl` | Local fallback public base |
-| `maxUploadBytes` | Local fallback size limit |
+| `maxUploadBytes` | Local fallback size limit for images and other files |
+| `maxVideoUploadBytes` | Local fallback video size limit |
 | `storageQuotaBytes` | Local fallback storage quota (default 10GB) |
 | `corsOrigins` | Comma-separated; empty echoes request Origin (handy for PicGo) |
 | `public.siteName` | Site name |
-| `public.maxUploadMb` | Client-facing limit in MB |
+| `public.maxUploadMb` | Client-facing limit in MB for images and other files |
+| `public.maxVideoUploadMb` | Client-facing video limit in MB |
 
 Local `.env` overrides example:
 

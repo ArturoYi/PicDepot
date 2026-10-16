@@ -9,6 +9,7 @@ export default defineEventHandler((event) => {
       bucket: Boolean(env.BUCKET)
     },
     r2PublicBaseUrlConfigured: Boolean(getPublicBaseUrl(event)),
-    maxUploadBytes: getMaxUploadBytes(event)
+    maxUploadBytes: getMaxUploadBytes(event),
+    maxVideoUploadBytes: getMaxVideoUploadBytes(event)
   }
 })

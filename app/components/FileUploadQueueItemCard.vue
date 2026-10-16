@@ -11,17 +11,40 @@ const meta = computed(() => uploadStatusMeta[props.item.status])
 const showProgress = computed(() =>
   props.item.status === 'converting' || props.item.status === 'uploading'
 )
-const progressValue = computed(() =>
-  props.item.status === 'converting' ? null : props.item.progress
-)
+const progressValue = computed(() => {
+  if (props.item.status === 'converting' && props.item.progress <= 0) return null
+  return props.item.progress
+})
+const busyLabel = computed(() => {
+  if (props.item.status === 'uploading') return '正在上传…'
+  if (props.item.previewKind === 'video') return '正在压缩视频…'
+  return '正在转换格式…'
+})
 </script>
 
 <template>
   <article class="ui-frame group relative h-full overflow-hidden transition-all duration-300 hover:shadow-lg border-default/80">
     <div class="ui-frame-clip relative aspect-square bg-elevated/80">
       <!-- 预览图 -->
+      <div
+        v-if="item.previewUrl && item.previewKind === 'video'"
+        class="relative size-full"
+      >
+        <AppMediaVideo
+          :src="item.previewUrl"
+          class="transition-transform duration-500 group-hover:scale-105"
+        />
+        <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <span class="flex size-10 items-center justify-center rounded-full bg-black/45 text-white shadow-lg backdrop-blur-sm">
+            <UIcon
+              name="i-lucide-play"
+              class="size-5 translate-x-0.5"
+            />
+          </span>
+        </div>
+      </div>
       <AppMediaImage
-        v-if="item.previewUrl"
+        v-else-if="item.previewUrl"
         :src="item.previewUrl"
         :alt="item.fileName"
         fit="cover"
@@ -39,7 +62,7 @@ const progressValue = computed(() =>
           />
         </div>
         <p class="px-4 text-center text-xs text-muted">
-          {{ item.status === 'converting' ? '正在转换格式以便预览' : '无图片预览' }}
+          {{ item.status === 'converting' ? '正在转换格式以便预览' : '无预览' }}
         </p>
       </div>
 
@@ -87,9 +110,9 @@ const progressValue = computed(() =>
             class="rounded-full shadow-xs"
           />
           <div class="flex items-center justify-between text-[10px] text-white/80">
-            <span>{{ item.status === 'converting' ? '转码中…' : '正在上传到 R2…' }}</span>
+            <span>{{ busyLabel }}</span>
             <span
-              v-if="item.status === 'uploading'"
+              v-if="item.progress > 0"
               class="font-mono tabular-nums"
             >{{ item.progress }}%</span>
           </div>

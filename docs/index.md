@@ -23,7 +23,7 @@ features:
   - title: Cloudflare Only
     details: 无 Telegram / S3 / Docker。Workers + Assets 一体部署，D1 存元数据，R2 公网直链读文件。
   - title: 安全默认
-    details: 上传需登录会话；单文件上限 20MB；管理员会话保护后台接口。
+    details: 上传需登录会话；图片及其他 20MB，视频 50MB；管理员会话保护后台接口。
   - title: 开箱管理
     details: 文件库分页筛选、批量移动/删除、多格式复制链接、粘贴上传、目录联想与用量统计。
   - title: 易于二开

@@ -12,6 +12,7 @@ export function uploadFileWithProgress(
   file: File,
   options: {
     directory?: string
+    signal?: AbortSignal
     onProgress?: (percent: number) => void
   }
 ): Promise<UploadResponse> {
@@ -51,6 +52,18 @@ export function uploadFileWithProgress(
     xhr.addEventListener('error', () => {
       reject(new Error('网络错误'))
     })
+
+    xhr.addEventListener('abort', () => {
+      reject(new DOMException('上传已取消', 'AbortError'))
+    })
+
+    if (options.signal) {
+      if (options.signal.aborted) {
+        reject(new DOMException('上传已取消', 'AbortError'))
+        return
+      }
+      options.signal.addEventListener('abort', () => xhr.abort(), { once: true })
+    }
 
     xhr.open('POST', '/api/upload')
     xhr.send(form)

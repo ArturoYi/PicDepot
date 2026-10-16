@@ -29,6 +29,7 @@ interface AdminStats {
     bucket: boolean
     r2PublicBaseUrlConfigured: boolean
     maxUploadBytes: number
+    maxVideoUploadBytes: number
   }
 }
 
@@ -56,7 +57,8 @@ const stats = ref<AdminStats>({
     db: false,
     bucket: false,
     r2PublicBaseUrlConfigured: false,
-    maxUploadBytes: 0
+    maxUploadBytes: 0,
+    maxVideoUploadBytes: 0
   }
 })
 
@@ -518,16 +520,20 @@ onMounted(async () => {
             </div>
           </div>
 
-          <div class="flex items-center justify-between rounded-lg border border-default/60 bg-elevated/30 p-2.5 text-xs">
+          <div class="flex items-center justify-between gap-3 rounded-lg border border-default/60 bg-elevated/30 p-2.5 text-xs">
             <div class="min-w-0">
               <p class="font-semibold text-highlighted">
                 单文件体积上限
               </p>
               <p class="text-[11px] text-muted">
-                Cloudflare Workers 限制
+                图片及其他 / 视频
               </p>
             </div>
-            <span class="font-mono font-bold text-primary">{{ formatFileBytes(stats.runtime.maxUploadBytes) }}</span>
+            <span class="shrink-0 font-mono font-bold text-primary">
+              {{ formatFileBytes(stats.runtime.maxUploadBytes) }}
+              <span class="font-normal text-muted">/</span>
+              {{ formatFileBytes(stats.runtime.maxVideoUploadBytes) }}
+            </span>
           </div>
         </div>
       </UCard>

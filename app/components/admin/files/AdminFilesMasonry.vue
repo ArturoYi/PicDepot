@@ -140,6 +140,23 @@ function onPreview(file: AdminFileRow) {
               class="transition-transform duration-500 group-hover:scale-105"
             />
             <div
+              v-else-if="isVideoFile(item) && item.url"
+              class="relative size-full"
+            >
+              <AppMediaVideo
+                :src="item.url"
+                class="transition-transform duration-500 group-hover:scale-105"
+              />
+              <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <span class="flex size-10 items-center justify-center rounded-full bg-black/50 text-white shadow-lg backdrop-blur-sm">
+                  <UIcon
+                    name="i-lucide-play"
+                    class="size-5 translate-x-0.5"
+                  />
+                </span>
+              </div>
+            </div>
+            <div
               v-else
               class="flex size-full flex-col items-center justify-center gap-1.5 text-muted"
             >

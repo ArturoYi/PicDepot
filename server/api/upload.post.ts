@@ -1,6 +1,9 @@
+import { isVideoUpload } from '#shared/utils/uploadLimits'
+
 /**
  * 上传：登录会话 → 校验大小 → R2.put → D1 insert → 返回公网直链。
  * 未绑定 D1/R2 时 503；未登录时 401。生产配置来自 wrangler / Dashboard，不依赖 `.env`。
+ * 视频上限见 MAX_VIDEO_UPLOAD_BYTES，其余文件见 MAX_UPLOAD_BYTES。
  */
 export default defineEventHandler(async (event) => {
   applyUploadCors(event)
@@ -32,10 +35,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Missing file field.' })
   }
 
-  if (filePart.data.byteLength > maxBytes) {
+  const contentType = filePart.type || 'application/octet-stream'
+  const video = isVideoUpload(filePart.filename, contentType)
+  const limitBytes = video ? getMaxVideoUploadBytes(event) : maxBytes
+  if (filePart.data.byteLength > limitBytes) {
     throw createError({
       statusCode: 413,
-      statusMessage: `File exceeds max size of ${Math.floor(maxBytes / 1024 / 1024)}MB.`
+      statusMessage: `File exceeds max size of ${Math.floor(limitBytes / 1024 / 1024)}MB.`
     })
   }
 
@@ -46,7 +52,6 @@ export default defineEventHandler(async (event) => {
 
   const id = createFileId(20)
   const objectKey = buildObjectKey(id, filePart.filename)
-  const contentType = filePart.type || 'application/octet-stream'
   const now = Date.now()
   const size = filePart.data.byteLength
 

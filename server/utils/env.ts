@@ -53,11 +53,22 @@ export function getMaxUploadBytes(event: H3Event): number {
   return Number(useRuntimeConfig(event).maxUploadBytes) || 20 * 1024 * 1024
 }
 
+/** 视频单独上限。生产以 wrangler / Dashboard 的 MAX_VIDEO_UPLOAD_BYTES 为准。 */
+export function getMaxVideoUploadBytes(event: H3Event): number {
+  const env = getCfEnv(event)
+  if (env.MAX_VIDEO_UPLOAD_BYTES) {
+    const n = Number(env.MAX_VIDEO_UPLOAD_BYTES)
+    if (Number.isFinite(n) && n > 0) return n
+  }
+  return Number(useRuntimeConfig(event).maxVideoUploadBytes) || 50 * 1024 * 1024
+}
+
 /** 存储配额：用于系统状态用量百分比。0 表示不展示百分比。默认 10GB（R2 免费额度）。 */
 export function getStorageQuotaBytes(event: H3Event): number {
   const env = getCfEnv(event)
-  if (env.STORAGE_QUOTA_BYTES !== undefined && env.STORAGE_QUOTA_BYTES !== '') {
-    const n = Number(env.STORAGE_QUOTA_BYTES)
+  const quota = env.STORAGE_QUOTA_BYTES
+  if (quota !== undefined && String(quota) !== '') {
+    const n = Number(quota)
     if (Number.isFinite(n) && n >= 0) return n
   }
   const fromConfig = Number(useRuntimeConfig(event).storageQuotaBytes)

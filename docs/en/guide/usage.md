@@ -11,7 +11,8 @@ The home page is guarded by auth middleware — log in first.
 Constraints:
 
 - No session → uploads denied (API checks the session cookie)
-- Max 20MB per file (overridable via `MAX_UPLOAD_BYTES`)
+- Images and other files: max 20MB (`MAX_UPLOAD_BYTES`)
+- Video: max 50MB (`MAX_VIDEO_UPLOAD_BYTES`). The browser compresses video to WebM or MP4 before upload so it can be previewed. If the original already plays and compression does not shrink it, the original is uploaded
 - HEIC and TIFF are converted to WebP or JPEG in the browser before upload
 
 ## Login & bootstrap (`/login`)
