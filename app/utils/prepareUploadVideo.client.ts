@@ -1,4 +1,5 @@
 import { DEFAULT_MAX_VIDEO_UPLOAD_BYTES } from '#shared/utils/uploadLimits'
+import type { VideoSample } from 'mediabunny'
 
 const PREVIEWABLE_CODECS = new Set(['avc', 'vp8', 'vp9', 'av1'])
 
@@ -40,6 +41,43 @@ function isPreviewContainer(file: File) {
 
 function abortError() {
   return new DOMException('上传已取消', 'AbortError')
+}
+
+function evenDimension(value: number) {
+  if (!Number.isFinite(value) || value <= 0) return 0
+  const rounded = Math.max(2, Math.round(value))
+  return rounded - (rounded % 2)
+}
+
+/**
+ * VP9 硬件编码器在 macOS 上会产出能播、但画面全黑的 WebM，声音轨道却是正常的。
+ * HDR / 10-bit 帧如果直接送进编码器，也会被当成极暗的 SDR。
+ * 先画到不透明画布，再交给软件编码器。
+ */
+function createOpaqueBlitter() {
+  let canvas: HTMLCanvasElement | null = null
+  let context: CanvasRenderingContext2D | null = null
+
+  return (sample: VideoSample) => {
+    const width = evenDimension(sample.displayWidth)
+    const height = evenDimension(sample.displayHeight)
+    if (!width || !height) return sample
+    if (!canvas || canvas.width !== width || canvas.height !== height) {
+      canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      context = canvas.getContext('2d', { alpha: false })
+    }
+    if (!canvas || !context) return sample
+    context.clearRect(0, 0, width, height)
+    sample.draw(context, 0, 0, width, height)
+    return canvas
+  }
+}
+
+function accelerationOrder(codec: Profile['videoCodec']) {
+  if (codec === 'avc') return ['prefer-hardware', 'prefer-software'] as const
+  return ['prefer-software'] as const
 }
 
 function throwIfAborted(signal?: AbortSignal) {
@@ -144,7 +182,7 @@ async function transcode(
     signal?: AbortSignal
   }
 ) {
-  for (const acceleration of ['prefer-hardware', 'no-preference'] as const) {
+  for (const acceleration of accelerationOrder(profile.videoCodec)) {
     throwIfAborted(options?.signal)
     const compressed = await transcodeOnce(mb, file, profile, level, hasAudio, acceleration, options)
     if (compressed) return compressed
@@ -158,7 +196,7 @@ async function transcodeOnce(
   profile: Profile,
   level: typeof QUALITY_LADDER[number],
   hasAudio: boolean,
-  hardwareAcceleration: 'prefer-hardware' | 'no-preference',
+  hardwareAcceleration: 'prefer-hardware' | 'prefer-software' | 'no-preference',
   options?: {
     onProgress?: (percent: number) => void
     signal?: AbortSignal
@@ -175,6 +213,7 @@ async function transcodeOnce(
 
   try {
     const encodeAudio = hasAudio ? await mb.canEncodeAudio(profile.audioCodec) : false
+    const blitOpaque = createOpaqueBlitter()
     const target = new mb.BufferTarget()
     const output = new mb.Output({
       format: profile.container === 'webm' ? new mb.WebMOutputFormat() : new mb.Mp4OutputFormat(),
@@ -190,7 +229,9 @@ async function transcodeOnce(
         codec: profile.videoCodec,
         quality: new mb.Quality(level),
         hardwareAcceleration,
-        alpha: 'discard'
+        alpha: 'discard',
+        allowRotationMetadata: false,
+        process: blitOpaque
       },
       audio: hasAudio
         ? (encodeAudio
